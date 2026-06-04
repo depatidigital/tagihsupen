@@ -38,13 +38,12 @@ async function resizeForAI(file: File): Promise<{ base64: string; mimeType: stri
 async function uploadFoto(file: File, tiketId: string): Promise<string> {
   const ext = file.name.split('.').pop() ?? 'jpg'
   const key = `laporan/${tiketId}/0.${ext}`
-  const res = await fetch('/api/presign', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ key, contentType: file.type }),
-  })
-  const { url, publicUrl } = await res.json()
-  await fetch(url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type, 'x-amz-acl': 'public-read' } })
+  const form = new FormData()
+  form.append('file', file)
+  form.append('key', key)
+  const res = await fetch('/api/upload', { method: 'POST', body: form })
+  if (!res.ok) throw new Error('Gagal mengunggah foto')
+  const { publicUrl } = await res.json()
   return publicUrl
 }
 

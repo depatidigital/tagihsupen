@@ -28,13 +28,23 @@ export async function presignUpload(key: string, contentType: string): Promise<s
     Bucket: BUCKET,
     Key: s3Key(key),
     ContentType: contentType,
-    ACL: 'public-read',
   })
   const signed = await getSignedUrl(s3, cmd, { expiresIn: 300 })
   // Replace internal S3_ENDPOINT with public-facing URL so browser can reach it
   const internalOrigin = new URL(process.env.S3_ENDPOINT!).origin
   const publicOrigin = new URL(PUBLIC_URL).origin
   return signed.replace(internalOrigin, publicOrigin)
+}
+
+export async function putObject(key: string, body: Buffer, contentType: string): Promise<string> {
+  const fullKey = s3Key(key)
+  await s3.send(new PutObjectCommand({
+    Bucket: BUCKET,
+    Key: fullKey,
+    Body: body,
+    ContentType: contentType,
+  }))
+  return s3PublicUrl(fullKey)
 }
 
 export async function deleteObject(key: string): Promise<void> {
