@@ -2,7 +2,6 @@ import { prisma } from '@/lib/prisma'
 import { KATEGORI_LABEL, STATUS_LABEL, STATUS_COLOR, formatTanggal } from '@/lib/utils'
 import { Status, Kategori } from '@prisma/client'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 
 async function checkAuth() {
@@ -13,7 +12,7 @@ async function checkAuth() {
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; kategori?: string }>
+  searchParams: Promise<{ status?: string; kategori?: string; error?: string }>
 }) {
   const authed = await checkAuth()
   const params = await searchParams
