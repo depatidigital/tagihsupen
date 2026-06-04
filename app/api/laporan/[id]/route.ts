@@ -32,7 +32,7 @@ async function sendStatusWa(laporan: LaporanRow) {
   if (status === 'DIPROSES') {
     const first = await isFirstTimeSend(whatsapp, JOB_KEYS.DIPROSES)
     if (first) {
-      await sendWhatsApp(whatsapp, msgDiproses({ tiketId }))
+      await sendWhatsApp(whatsapp, { message: msgDiproses({ tiketId }) })
       await logSend(whatsapp, JOB_KEYS.DIPROSES, laporan.id)
     }
   }
@@ -46,16 +46,15 @@ async function sendStatusWa(laporan: LaporanRow) {
       const warga = await prisma.warga.findUnique({ where: { whatsapp } })
       const totalSelesai = warga?.totalSelesai ?? 1
 
-      await sendWhatsApp(
-        whatsapp,
-        msgSelesai({
+      await sendWhatsApp(whatsapp, {
+        message: msgSelesai({
           tiketId,
           jamDitangani,
           dinas: KATEGORI_DINAS[kategori],
           lokasi,
           totalSelesai,
-        })
-      )
+        }),
+      })
       await logSend(whatsapp, JOB_KEYS.SELESAI, laporan.id)
 
       // Update warga badge
