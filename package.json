@@ -11,7 +11,7 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "cron": "tsx lib/cron-runner.ts"
+    "cron": "node node_modules/tsx/dist/cli.mjs lib/cron-runner.ts"
   },
   "dependencies": {
     "next": "^16.0.0",

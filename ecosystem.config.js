@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'tagihsupen-web',
-      script: 'node_modules/.bin/next',
+      script: 'node_modules/next/dist/bin/next',
       args: 'start',
       env: {
         NODE_ENV: 'production',
@@ -12,7 +12,7 @@ module.exports = {
     },
     {
       name: 'tagihsupen-cron',
-      script: 'node_modules/.bin/tsx',
+      script: 'node_modules/tsx/dist/cli.mjs',
       args: 'lib/cron-runner.ts',
       env: {
         NODE_ENV: 'production',
