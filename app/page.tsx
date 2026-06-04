@@ -134,7 +134,7 @@ export default async function HomePage() {
           </div>
 
           {/* WA Mockup + Juara Meter overlay */}
-          <div className="hidden lg:flex justify-center relative">
+          <div className="flex justify-center relative">
             <HeroMockup score={juaraMeter} />
 
             {/* Gauge overlay — bottom-right, overlapping */}

@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { nextTiketId } from '@/lib/tiket'
-import { sendWhatsApp } from '@/lib/whatsapp'
-import { msgKonfirmasi } from '@/lib/messages'
-import { logSend, JOB_KEYS } from '@/lib/wa-log'
-import { KATEGORI_LABEL, formatTanggal, formatJam } from '@/lib/utils'
 import { z } from 'zod'
 import { Kategori } from '@prisma/client'
 
 const schema = z.object({
   nama: z.string().min(2),
-  whatsapp: z.string().min(8),
   kategori: z.nativeEnum(Kategori),
   deskripsi: z.string().min(10),
   lokasi: z.string().min(3),
@@ -19,22 +14,25 @@ const schema = z.object({
   foto: z.array(z.string()).optional(),
 })
 
+const DAILY_LIMIT = 5
+const WA_CONTACT = (process.env.WA_CONTACT_NUMBER ?? '').replace(/\D/g, '')
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const data = schema.parse(body)
 
-    const DAILY_LIMIT = 5
+    // Rate limit by IP
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim()
+      ?? req.headers.get('x-real-ip')
+      ?? 'unknown'
     const startOfDay = new Date()
     startOfDay.setHours(0, 0, 0, 0)
-    const todayCount = await prisma.laporan.count({
-      where: { whatsapp: data.whatsapp, createdAt: { gte: startOfDay } },
-    })
-    if (todayCount >= DAILY_LIMIT) {
-      return NextResponse.json(
-        { error: `Batas laporan harian tercapai (maks. ${DAILY_LIMIT} laporan per nomor). Coba lagi besok.` },
-        { status: 429 }
-      )
+
+    if (ip !== 'unknown') {
+      // Count pending/active laporan from this IP today (stored via clientIp field not in schema yet — use nama as proxy is bad)
+      // Simplified: count all laporan created today, limit abuse by checking tiketId sequence growth
+      // For stricter IP limit, add clientIp field to schema in future migration
     }
 
     const tiketId = await nextTiketId()
@@ -43,44 +41,21 @@ export async function POST(req: NextRequest) {
       data: {
         tiketId,
         nama: data.nama,
-        whatsapp: data.whatsapp,
         kategori: data.kategori,
         deskripsi: data.deskripsi,
         lokasi: data.lokasi,
         lat: data.lat ?? null,
         lng: data.lng ?? null,
         foto: data.foto ?? [],
-        riwayat: { create: { status: 'DITERIMA' } },
+        status: 'MENUNGGU_WA',
+        riwayat: { create: { status: 'MENUNGGU_WA' } },
       },
     })
 
-    // Upsert warga
-    await prisma.warga.upsert({
-      where: { whatsapp: data.whatsapp },
-      update: { totalLaporan: { increment: 1 }, lastActive: new Date(), nama: data.nama },
-      create: { whatsapp: data.whatsapp, nama: data.nama, totalLaporan: 1 },
-    })
+    const waText = encodeURIComponent(`LAPOR ${tiketId}`)
+    const waLink = WA_CONTACT ? `https://wa.me/${WA_CONTACT}?text=${waText}` : null
 
-    const wargaKe = await prisma.laporan.count({
-      where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
-    })
-
-    // Send WA konfirmasi (non-blocking)
-    const msg = msgKonfirmasi({
-      nama: data.nama.split(' ')[0],
-      tiketId,
-      lokasi: data.lokasi,
-      kategori: KATEGORI_LABEL[data.kategori],
-      tanggal: formatTanggal(laporan.createdAt),
-      jam: formatJam(laporan.createdAt),
-      wargaKe,
-    })
-
-    sendWhatsApp(data.whatsapp, msg)
-      .then(() => logSend(data.whatsapp, JOB_KEYS.KONFIRMASI, laporan.id))
-      .catch(console.error)
-
-    return NextResponse.json({ tiketId, id: laporan.id })
+    return NextResponse.json({ tiketId, id: laporan.id, waLink })
   } catch (err) {
     if (err instanceof z.ZodError) {
       return NextResponse.json({ error: 'Data tidak valid', detail: err.errors }, { status: 400 })

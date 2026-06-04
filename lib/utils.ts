@@ -46,6 +46,7 @@ export const KATEGORI_DINAS: Record<Kategori, string> = {
 }
 
 export const STATUS_LABEL: Record<Status, string> = {
+  MENUNGGU_WA: 'Menunggu Konfirmasi WA',
   DITERIMA: 'Diterima',
   DITERUSKAN: 'Diteruskan',
   DIPROSES: 'Diproses',
@@ -54,6 +55,7 @@ export const STATUS_LABEL: Record<Status, string> = {
 }
 
 export const STATUS_COLOR: Record<Status, string> = {
+  MENUNGGU_WA: '#9CA3AF',
   DITERIMA: '#6B7280',
   DITERUSKAN: '#3B82F6',
   DIPROSES: '#F5C842',

@@ -67,7 +67,7 @@ async function uploadFoto(file: File, tiketId: string): Promise<string> {
     body: JSON.stringify({ key, contentType: file.type }),
   })
   const { url, publicUrl } = await res.json()
-  await fetch(url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
+  await fetch(url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type, 'x-amz-acl': 'public-read' } })
   return publicUrl
 }
 
