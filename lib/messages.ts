@@ -11,18 +11,14 @@ export function msgKonfirmasi(vars: {
   jam: string
   wargaKe: number
 }): string {
-  return `👋 Halo ${vars.nama}!
+  return `${vars.nama}, suaramu nomor *${vars.wargaKe}* hari ini. ✊
 
-Laporan kamu sudah kami terima.
-
-📋 Tiket ${vars.tiketId}
+Laporan resmi masuk:
 📍 ${vars.lokasi}
 🗂️ ${vars.kategori}
-🕐 ${vars.tanggal} · ${vars.jam} WIB
+🎫 ${vars.tiketId} · ${vars.tanggal} ${vars.jam}
 
-Kami akan update kamu di sini setiap ada perkembangan. Suaramu sedang dalam perjalanan. 🚀
-
-Kamu warga Supen ke-${vars.wargaKe} yang bersuara hari ini. Terima kasih.
+Kalau 48 jam tidak ada respons dari dinas, kita tagih bareng.
 
 Balas:
 1 — Cek status
@@ -33,11 +29,11 @@ export function msgDiteruskan(vars: {
   tiketId: string
   dinas: string
 }): string {
-  return `📬 Update ${vars.tiketId}
+  return `📬 *${vars.tiketId}* masuk meja *${vars.dinas}* Kota Sungai Penuh.
 
-Laporan kamu sudah diteruskan ke ${vars.dinas} Kota Sungai Penuh.
+Mereka punya 48 jam. Jam mulai sekarang. ⏱
 
-Mereka punya waktu 2×24 jam untuk merespons. Kami pantau terus. 👀`
+Makin banyak yang tahu, makin cepat ditangani — share ke teman atau grup RT kamu.`
 }
 
 export function msgEskalasi24(vars: { tiketId: string }): string {

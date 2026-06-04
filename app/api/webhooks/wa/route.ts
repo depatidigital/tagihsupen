@@ -5,6 +5,8 @@ import { msgReply1, msgReply3, msgReplyUnknown } from '@/lib/messages'
 import { msgKonfirmasiAI } from '@/lib/messages-ai'
 import { logSend, JOB_KEYS } from '@/lib/wa-log'
 import { KATEGORI_LABEL, formatTanggal, formatJam } from '@/lib/utils'
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://tagihsupen.id'
 import fs from 'fs'
 import path from 'path'
 
@@ -98,6 +100,13 @@ async function handleLapor(phone: string, jid: string | null, tiketId: string) {
   sendWhatsApp(phone, { message: msg })
     .then(() => logSend(phone, JOB_KEYS.KONFIRMASI, laporan.id))
     .catch(console.error)
+
+  // Send share card (fire-and-forget)
+  sendWhatsApp(phone, {
+    mediaUrl: `${APP_URL}/api/card/${tiketId}`,
+    mediaType: 'image',
+    caption: `Suara ke-${wargaKe} hari ini. Simpan & share ke grup RT/RW kamu. 👆`,
+  }).catch(console.error)
 }
 
 export async function GET() {

@@ -1,8 +1,12 @@
 export interface WaSendOptions {
-  message: string
+  message?: string
   priority?: 'low' | 'medium' | 'high'
   callbackUrl?: string
   name?: string
+  mediaUrl?: string
+  mediaType?: 'image' | 'video' | 'audio' | 'ptt' | 'document'
+  caption?: string
+  filename?: string
 }
 
 export interface WaSendResult {
@@ -49,9 +53,13 @@ export async function sendWhatsApp(
   try {
     const body: Record<string, string> = {
       phone: normalizePhone(phone),
-      message: options.message,
       priority: options.priority ?? 'medium',
     }
+    if (options.message) body.message = options.message
+    if (options.mediaUrl) body.mediaUrl = options.mediaUrl
+    if (options.mediaType) body.mediaType = options.mediaType
+    if (options.caption) body.caption = options.caption
+    if (options.filename) body.filename = options.filename
     if (options.callbackUrl) body.callbackUrl = options.callbackUrl
 
     const res = await fetch(`${config.baseUrl}/public/wa/v1/applications/${config.appId}/send`, {
@@ -97,9 +105,13 @@ export async function sendWhatsAppJid(
   try {
     const body: Record<string, string> = {
       jid,
-      message: options.message,
       priority: options.priority ?? 'medium',
     }
+    if (options.message) body.message = options.message
+    if (options.mediaUrl) body.mediaUrl = options.mediaUrl
+    if (options.mediaType) body.mediaType = options.mediaType
+    if (options.caption) body.caption = options.caption
+    if (options.filename) body.filename = options.filename
     if (options.callbackUrl) body.callbackUrl = options.callbackUrl
 
     const res = await fetch(`${config.baseUrl}/public/wa/v1/applications/${config.appId}/send`, {
