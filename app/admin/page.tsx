@@ -20,6 +20,7 @@ export default async function AdminPage({
   if (!authed) return <LoginPage error={params.error === '1' ? 'Password salah' : undefined} />
 
   const where: Record<string, unknown> = {}
+
   if (params.status) where.status = params.status as Status
   if (params.kategori) where.kategori = params.kategori as Kategori
 
