@@ -72,6 +72,18 @@ export function formatTanggal(date: Date | string): string {
   })
 }
 
+export function labelJuaraMeter(skor: number): string {
+  if (skor >= 80) return 'Sungai Penuh Makin Juara 🏆'
+  if (skor >= 60) return 'Terus Bergerak 💪'
+  return 'Butuh Tindakan Segera ⚠️'
+}
+
+export function colorJuaraMeter(skor: number): string {
+  if (skor >= 80) return '#1B4332'
+  if (skor >= 60) return '#F5C842'
+  return '#EF4444'
+}
+
 export function formatJam(date: Date | string): string {
   const d = new Date(date)
   return d.toLocaleTimeString('id-ID', {

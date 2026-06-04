@@ -1,4 +1,5 @@
 import { prisma } from './prisma'
+export { labelJuaraMeter, colorJuaraMeter } from './utils'
 
 export async function hitungJuaraMeter(): Promise<number> {
   const since = new Date()
@@ -38,17 +39,6 @@ export async function hitungJuaraMeter(): Promise<number> {
   return Math.max(0, Math.min(100, Math.round(skor)))
 }
 
-export function labelJuaraMeter(skor: number): string {
-  if (skor >= 80) return 'Sungai Penuh Makin Juara 🏆'
-  if (skor >= 60) return 'Terus Bergerak 💪'
-  return 'Butuh Tindakan Segera ⚠️'
-}
-
-export function colorJuaraMeter(skor: number): string {
-  if (skor >= 80) return '#1B4332'
-  if (skor >= 60) return '#F5C842'
-  return '#EF4444'
-}
 
 export async function getCachedJuaraMeter(): Promise<number> {
   const setting = await prisma.setting.findUnique({ where: { key: 'juara_meter' } })

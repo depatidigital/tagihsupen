@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import { getCachedJuaraMeter, labelJuaraMeter, colorJuaraMeter } from '@/lib/juara'
-import { KATEGORI_LABEL, KATEGORI_EMOJI, STATUS_LABEL, STATUS_COLOR, formatTanggal } from '@/lib/utils'
+import { getCachedJuaraMeter } from '@/lib/juara'
+import { KATEGORI_LABEL, KATEGORI_EMOJI, STATUS_LABEL, STATUS_COLOR, formatTanggal, labelJuaraMeter, colorJuaraMeter } from '@/lib/utils'
 import Link from 'next/link'
 
 export const revalidate = 60

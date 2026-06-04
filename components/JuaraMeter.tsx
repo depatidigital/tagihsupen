@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { labelJuaraMeter, colorJuaraMeter } from '@/lib/juara'
+import { labelJuaraMeter, colorJuaraMeter } from '@/lib/utils'
 
 interface Props {
   initialSkor: number
