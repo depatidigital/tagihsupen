@@ -15,8 +15,9 @@ const schema = z.object({
   catatanAdmin: z.string().optional(),
 })
 
-async function sendStatusWa(laporan: Awaited<ReturnType<typeof getLaporan>>) {
-  if (!laporan) return
+type LaporanRow = NonNullable<Awaited<ReturnType<typeof getLaporan>>>
+
+async function sendStatusWa(laporan: LaporanRow) {
 
   const { status, whatsapp, tiketId, kategori, lokasi, createdAt, selesaiAt } = laporan
 

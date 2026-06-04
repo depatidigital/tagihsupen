@@ -13,22 +13,12 @@ async function checkAuth() {
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; kategori?: string; password?: string }>
+  searchParams: Promise<{ status?: string; kategori?: string }>
 }) {
-  const params = await searchParams
-
-  if (params.password) {
-    if (params.password === process.env.ADMIN_PASSWORD) {
-      const { cookies: setCookies } = await import('next/headers')
-      ;(await setCookies()).set('admin_auth', 'ok', { httpOnly: true, maxAge: 86400 * 7 })
-    } else {
-      return <LoginPage error="Password salah" />
-    }
-  }
-
   const authed = await checkAuth()
   if (!authed) return <LoginPage />
 
+  const params = await searchParams
   const where: Record<string, unknown> = {}
   if (params.status) where.status = params.status as Status
   if (params.kategori) where.kategori = params.kategori as Kategori
@@ -49,11 +39,10 @@ export default async function AdminPage({
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-primary">Admin Panel</h1>
         <form action="/api/admin/logout" method="POST">
-          <button className="text-xs text-gray-400">Keluar</button>
+          <button className="text-xs text-gray-400 underline">Keluar</button>
         </form>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-3 gap-2">
         {stats.map((s) => (
           <div key={s.status} className="card text-center">
@@ -65,9 +54,8 @@ export default async function AdminPage({
         ))}
       </div>
 
-      {/* Filter */}
       <div className="flex gap-2 flex-wrap">
-        {['', 'DITERIMA', 'DITERUSKAN', 'DIPROSES', 'SELESAI', 'DITOLAK'].map((s) => (
+        {(['', 'DITERIMA', 'DITERUSKAN', 'DIPROSES', 'SELESAI', 'DITOLAK'] as const).map((s) => (
           <Link
             key={s}
             href={s ? `/admin?status=${s}` : '/admin'}
@@ -77,12 +65,17 @@ export default async function AdminPage({
                 : 'border-gray-200 text-gray-600'
             }`}
           >
-            {s ? STATUS_LABEL[s as Status] : 'Semua'}
+            {s ? STATUS_LABEL[s] : 'Semua'}
           </Link>
         ))}
+        <a
+          href="/api/admin/export"
+          className="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 ml-auto"
+        >
+          Export CSV
+        </a>
       </div>
 
-      {/* Table */}
       <div className="space-y-2">
         {laporan.map((l) => (
           <Link key={l.id} href={`/admin/${l.id}`}>
@@ -120,7 +113,7 @@ function LoginPage({ error }: { error?: string }) {
   return (
     <div className="py-16 max-w-sm mx-auto">
       <h1 className="text-2xl font-extrabold text-primary mb-6 text-center">Admin</h1>
-      <form method="GET" className="space-y-4">
+      <form action="/api/admin/login" method="POST" className="space-y-4">
         <input
           type="password"
           name="password"
