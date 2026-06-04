@@ -33,11 +33,11 @@ async function updateStatus(id: string, formData: FormData) {
 
   try {
     if (status === 'DITERUSKAN' && (await isFirstTimeSend(whatsapp, JOB_KEYS.DITERUSKAN))) {
-      await sendWhatsApp(whatsapp, msgDiteruskan({ tiketId, dinas: KATEGORI_DINAS[kategori] }))
+      await sendWhatsApp(whatsapp, { message: msgDiteruskan({ tiketId, dinas: KATEGORI_DINAS[kategori] }) })
       await logSend(whatsapp, JOB_KEYS.DITERUSKAN, id)
     }
     if (status === 'DIPROSES' && (await isFirstTimeSend(whatsapp, JOB_KEYS.DIPROSES))) {
-      await sendWhatsApp(whatsapp, msgDiproses({ tiketId }))
+      await sendWhatsApp(whatsapp, { message: msgDiproses({ tiketId }) })
       await logSend(whatsapp, JOB_KEYS.DIPROSES, id)
     }
     if (status === 'SELESAI' && (await isFirstTimeSend(whatsapp, JOB_KEYS.SELESAI))) {
