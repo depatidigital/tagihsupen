@@ -1,36 +1,13 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 import { Kategori } from '@prisma/client'
 import { LOKASI_PRESET, KATEGORI_LABEL, KATEGORI_EMOJI } from '@/lib/utils'
 import { checkImageQuality, type ImageIssue } from '@/lib/check-image'
 
-type Step = 1 | 2 | 3 | 4
+type Step = 1 | 2 | 3 | 4 | 5
 
-const STEP_LABELS = ['Foto', 'Analisa', 'Kategori', 'Detail']
-
-function formatWA(raw: string): string {
-  let d = raw.replace(/\D/g, '')
-  if (d.startsWith('62')) d = '0' + d.slice(2)
-  if (d.startsWith('0')) d = d.slice(0, 13)
-  else d = d.slice(0, 12)
-  if (d.length <= 4) return d
-  if (d.length <= 8) return d.slice(0, 4) + '-' + d.slice(4)
-  return d.slice(0, 4) + '-' + d.slice(4, 8) + '-' + d.slice(8)
-}
-
-function stripWA(formatted: string): string {
-  return formatted.replace(/\D/g, '')
-}
-
-function validateWA(formatted: string): string | null {
-  const d = stripWA(formatted)
-  if (!d) return 'Nomor WhatsApp wajib diisi'
-  if (!d.startsWith('08')) return 'Nomor harus diawali 08 (nomor HP Indonesia)'
-  if (!/^08[1-9]\d{7,10}$/.test(d)) return 'Format nomor tidak valid'
-  return null
-}
+const STEP_LABELS = ['Foto', 'Analisa', 'Kategori', 'Detail', 'Konfirmasi']
 
 async function resizeForAI(file: File): Promise<{ base64: string; mimeType: string }> {
   return new Promise((resolve, reject) => {
@@ -72,7 +49,6 @@ async function uploadFoto(file: File, tiketId: string): Promise<string> {
 }
 
 export default function LaporPage() {
-  const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
 
   const [step, setStep] = useState<Step>(1)
@@ -88,18 +64,12 @@ export default function LaporPage() {
   const [lokasiIsGPS, setLokasiIsGPS] = useState(true)
   const [gpsStatus, setGpsStatus] = useState<'idle' | 'detecting' | 'ok' | 'error'>('idle')
   const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null)
-  const [form, setForm] = useState({
-    deskripsi: '',
-    nama: '',
-    lokasi: 'GPS',
-    lokasiManual: '',
-    whatsapp: '',
-  })
+  const [form, setForm] = useState({ deskripsi: '', nama: '', lokasi: 'GPS', lokasiManual: '' })
   const [loading, setLoading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState('')
   const [error, setError] = useState('')
-  const [waError, setWaError] = useState<string | null>(null)
-  const [limitInfo, setLimitInfo] = useState<{ used: number; limit: number; remaining: number } | null>(null)
+  const [tiketId, setTiketId] = useState('')
+  const [waLink, setWaLink] = useState('')
 
   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -142,8 +112,6 @@ export default function LaporPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!kategori || !foto) return
-    const waErr = validateWA(form.whatsapp)
-    if (waErr) { setWaError(waErr); return }
     setLoading(true)
     setError('')
     try {
@@ -166,32 +134,25 @@ export default function LaporPage() {
       const res = await fetch('/api/laporan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nama: form.nama,
-          whatsapp: stripWA(form.whatsapp),
-          kategori,
-          deskripsi: form.deskripsi,
-          lokasi,
-          lat,
-          lng,
-          foto: [],
-        }),
+        body: JSON.stringify({ nama: form.nama, kategori, deskripsi: form.deskripsi, lokasi, lat, lng, foto: [] }),
       })
       if (!res.ok) {
         const { error: msg } = await res.json()
         throw new Error(msg ?? 'Gagal mengirim laporan')
       }
-      const { tiketId } = await res.json()
+      const result = await res.json()
 
       setUploadProgress('Mengunggah foto...')
-      const fotoUrl = await uploadFoto(foto, tiketId)
-      await fetch(`/api/laporan/${tiketId}`, {
+      const fotoUrl = await uploadFoto(foto, result.tiketId)
+      await fetch(`/api/laporan/${result.tiketId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ foto: [fotoUrl] }),
       })
 
-      router.push(`/tiket/${tiketId}?baru=1`)
+      setTiketId(result.tiketId)
+      setWaLink(result.waLink ?? '')
+      setStep(5)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan')
     } finally {
@@ -201,29 +162,14 @@ export default function LaporPage() {
   }
 
   function detectGPS() {
-    if (!navigator.geolocation) {
-      setGpsStatus('error')
-      return
-    }
+    if (!navigator.geolocation) { setGpsStatus('error'); return }
     setGpsStatus('detecting')
     setGpsCoords(null)
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setGpsCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })
-        setGpsStatus('ok')
-      },
+      (pos) => { setGpsCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setGpsStatus('ok') },
       () => setGpsStatus('error'),
       { timeout: 10000, enableHighAccuracy: true }
     )
-  }
-
-  async function checkLimit(formatted: string) {
-    const wa = stripWA(formatted)
-    if (wa.length < 8) { setLimitInfo(null); return }
-    try {
-      const res = await fetch(`/api/laporan/limit?wa=${encodeURIComponent(wa)}`)
-      if (res.ok) setLimitInfo(await res.json())
-    } catch { /* silent */ }
   }
 
   function resetToStep1() {
@@ -248,20 +194,13 @@ export default function LaporPage() {
             const done = n < step
             return (
               <div key={n} className="flex items-center flex-1 last:flex-none">
-                <div
-                  className={[
-                    'flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all shrink-0',
-                    done ? 'bg-primary text-white' : active ? 'bg-accent text-primary' : 'bg-gray-100 text-gray-400',
-                  ].join(' ')}
-                >
+                <div className={[
+                  'flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all shrink-0',
+                  done ? 'bg-primary text-white' : active ? 'bg-accent text-primary' : 'bg-gray-100 text-gray-400',
+                ].join(' ')}>
                   {done ? '✓' : n}
                 </div>
-                <span
-                  className={[
-                    'ml-1.5 text-xs font-medium hidden sm:inline',
-                    active ? 'text-primary' : 'text-gray-400',
-                  ].join(' ')}
-                >
+                <span className={['ml-1.5 text-xs font-medium hidden sm:inline', active ? 'text-primary' : 'text-gray-400'].join(' ')}>
                   {label}
                 </span>
                 {i < STEP_LABELS.length - 1 && (
@@ -275,15 +214,7 @@ export default function LaporPage() {
         {/* ── STEP 1: FOTO ── */}
         {step === 1 && (
           <div className="space-y-4">
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-
+            <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} />
             {!fotoPreview ? (
               <button
                 type="button"
@@ -297,11 +228,7 @@ export default function LaporPage() {
             ) : (
               <div className="relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={fotoPreview}
-                  alt="Preview foto"
-                  className="w-full aspect-[4/3] object-cover rounded-2xl"
-                />
+                <img src={fotoPreview} alt="Preview foto" className="w-full aspect-[4/3] object-cover rounded-2xl" />
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
@@ -311,29 +238,18 @@ export default function LaporPage() {
                 </button>
               </div>
             )}
-
-            {checkingImage && (
-              <p className="text-sm text-gray-400 text-center animate-pulse">Memeriksa kualitas foto...</p>
-            )}
-
+            {checkingImage && <p className="text-sm text-gray-400 text-center animate-pulse">Memeriksa kualitas foto...</p>}
             {imageIssues.length > 0 && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 space-y-1.5">
                 <p className="text-xs font-semibold text-yellow-800">Peringatan Kualitas Foto</p>
                 {imageIssues.map((issue) => (
                   <p key={issue.code} className="text-xs text-yellow-700">⚠️ {issue.message}</p>
                 ))}
-                <p className="text-xs text-yellow-600 pt-1">
-                  Bisa tetap dilanjutkan — foto lebih jelas mempercepat penanganan.
-                </p>
+                <p className="text-xs text-yellow-600 pt-1">Bisa tetap dilanjutkan — foto lebih jelas mempercepat penanganan.</p>
               </div>
             )}
-
             {fotoPreview && !checkingImage && (
-              <button
-                type="button"
-                onClick={handleAnalisa}
-                className="btn-primary w-full text-center"
-              >
+              <button type="button" onClick={handleAnalisa} className="btn-primary w-full text-center">
                 Analisa dengan AI →
               </button>
             )}
@@ -357,25 +273,19 @@ export default function LaporPage() {
             {kategoriAI && !aiFailed ? (
               <div className="bg-green-50 border border-green-200 rounded-xl p-4">
                 <p className="text-xs font-medium text-green-600 mb-1">AI Mendeteksi</p>
-                <p className="text-lg font-bold text-primary">
-                  {KATEGORI_EMOJI[kategoriAI]} {KATEGORI_LABEL[kategoriAI]}
-                </p>
+                <p className="text-lg font-bold text-primary">{KATEGORI_EMOJI[kategoriAI]} {KATEGORI_LABEL[kategoriAI]}</p>
                 {alasanAI && <p className="text-xs text-gray-500 mt-1">{alasanAI}</p>}
               </div>
             ) : (
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                 <p className="text-sm text-gray-500">
-                  {aiFailed
-                    ? 'AI tidak dapat mendeteksi. Pilih kategori secara manual.'
-                    : 'Pilih kategori masalah.'}
+                  {aiFailed ? 'AI tidak dapat mendeteksi. Pilih kategori secara manual.' : 'Pilih kategori masalah.'}
                 </p>
               </div>
             )}
-
             <p className="text-sm font-medium text-gray-700">
               {kategoriAI && !aiFailed ? 'Konfirmasi atau ganti kategori:' : 'Pilih kategori:'}
             </p>
-
             <div className="grid grid-cols-2 gap-2">
               {(Object.entries(KATEGORI_LABEL) as [Kategori, string][]).map(([k, label]) => (
                 <button
@@ -384,9 +294,7 @@ export default function LaporPage() {
                   onClick={() => setKategori(k)}
                   className={[
                     'flex items-center gap-2 p-3 rounded-xl border text-sm font-medium text-left transition-all',
-                    kategori === k
-                      ? 'bg-primary text-white border-primary'
-                      : 'bg-white text-gray-700 border-gray-200 hover:border-primary hover:bg-green-50',
+                    kategori === k ? 'bg-primary text-white border-primary' : 'bg-white text-gray-700 border-gray-200 hover:border-primary hover:bg-green-50',
                   ].join(' ')}
                 >
                   <span className="shrink-0">{KATEGORI_EMOJI[k]}</span>
@@ -394,7 +302,6 @@ export default function LaporPage() {
                 </button>
               ))}
             </div>
-
             <button
               type="button"
               disabled={!kategori}
@@ -403,12 +310,7 @@ export default function LaporPage() {
             >
               Lanjut →
             </button>
-
-            <button
-              type="button"
-              onClick={resetToStep1}
-              className="w-full text-center text-sm text-gray-400 hover:text-gray-600 py-1"
-            >
+            <button type="button" onClick={resetToStep1} className="w-full text-center text-sm text-gray-400 hover:text-gray-600 py-1">
               ← Ganti Foto
             </button>
           </div>
@@ -442,9 +344,7 @@ export default function LaporPage() {
                 minLength={2}
                 required
               />
-              {form.nama.length === 1 && (
-                <p className="text-xs text-red-500 mt-1">⚠️ Nama terlalu pendek</p>
-              )}
+              {form.nama.length === 1 && <p className="text-xs text-red-500 mt-1">⚠️ Nama terlalu pendek</p>}
             </div>
 
             <div>
@@ -455,36 +355,26 @@ export default function LaporPage() {
                 onChange={(e) => {
                   const v = e.target.value
                   if (v === 'GPS') {
-                    setLokasiIsGPS(true)
-                    setLokasiIsManual(false)
+                    setLokasiIsGPS(true); setLokasiIsManual(false)
                     if (gpsStatus === 'idle') detectGPS()
                   } else if (v === 'Lokasi Lain (isi manual)') {
-                    setLokasiIsGPS(false)
-                    setLokasiIsManual(true)
+                    setLokasiIsGPS(false); setLokasiIsManual(true)
                     setForm((f) => ({ ...f, lokasi: v }))
                   } else {
-                    setLokasiIsGPS(false)
-                    setLokasiIsManual(false)
+                    setLokasiIsGPS(false); setLokasiIsManual(false)
                     setForm((f) => ({ ...f, lokasi: v }))
                   }
                 }}
               >
                 <option value="GPS">📍 Gunakan Posisi Saya</option>
-                {LOKASI_PRESET.map((l) => (
-                  <option key={l} value={l}>{l}</option>
-                ))}
+                {LOKASI_PRESET.map((l) => <option key={l} value={l}>{l}</option>)}
               </select>
-
               {lokasiIsGPS && (
                 <div className="mt-2">
                   {gpsStatus === 'idle' && (
-                    <button type="button" onClick={detectGPS} className="text-sm text-primary font-medium">
-                      Deteksi posisi sekarang →
-                    </button>
+                    <button type="button" onClick={detectGPS} className="text-sm text-primary font-medium">Deteksi posisi sekarang →</button>
                   )}
-                  {gpsStatus === 'detecting' && (
-                    <p className="text-sm text-gray-400 animate-pulse">📡 Mendeteksi posisi GPS...</p>
-                  )}
+                  {gpsStatus === 'detecting' && <p className="text-sm text-gray-400 animate-pulse">📡 Mendeteksi posisi GPS...</p>}
                   {gpsStatus === 'ok' && gpsCoords && (
                     <p className="text-sm text-green-600 font-medium">
                       ✓ Posisi terdeteksi ({gpsCoords.lat.toFixed(4)}, {gpsCoords.lng.toFixed(4)})
@@ -500,7 +390,6 @@ export default function LaporPage() {
                   )}
                 </div>
               )}
-
               {lokasiIsManual && (
                 <input
                   className="input mt-2"
@@ -512,77 +401,63 @@ export default function LaporPage() {
               )}
             </div>
 
-            <div>
-              <label className="label">Nomor WhatsApp *</label>
-              <input
-                className={['input', waError ? 'border-red-400 focus:ring-red-400' : ''].join(' ')}
-                type="tel"
-                inputMode="numeric"
-                value={form.whatsapp}
-                onChange={(e) => {
-                  const formatted = formatWA(e.target.value)
-                  setForm((f) => ({ ...f, whatsapp: formatted }))
-                  setWaError(null)
-                }}
-                onBlur={(e) => {
-                  const err = validateWA(e.target.value)
-                  setWaError(err)
-                  if (!err) checkLimit(e.target.value)
-                }}
-                placeholder="0812-3456-7890"
-                required
-              />
-              {waError
-                ? <p className="text-xs text-red-500 mt-1">⚠️ {waError}</p>
-                : <p className="text-xs text-gray-400 mt-1">Update status laporan dikirim ke nomor ini</p>
-              }
-              {limitInfo && (
-                <div className={[
-                  'mt-2 rounded-xl px-3 py-2 text-xs font-medium flex items-center gap-2',
-                  limitInfo.remaining === 0
-                    ? 'bg-red-50 text-red-600 border border-red-200'
-                    : limitInfo.remaining <= 2
-                    ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
-                    : 'bg-green-50 text-green-700 border border-green-200',
-                ].join(' ')}>
-                  <span className="text-base">
-                    {limitInfo.remaining === 0 ? '🚫' : limitInfo.remaining <= 2 ? '⚠️' : '✅'}
-                  </span>
-                  <span>
-                    {limitInfo.remaining === 0
-                      ? `Batas harian tercapai. Coba lagi besok.`
-                      : `Sisa laporan hari ini: ${limitInfo.remaining} dari ${limitInfo.limit}`}
-                  </span>
-                </div>
-              )}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-600">{error}</div>
+            )}
+
+            <button type="submit" disabled={loading} className="btn-primary w-full text-center disabled:opacity-60">
+              {loading ? (uploadProgress || 'Mengirim...') : 'Simpan & Lanjut →'}
+            </button>
+
+            <button type="button" onClick={() => setStep(3)} className="w-full text-center text-sm text-gray-400 hover:text-gray-600 py-1">
+              ← Kembali
+            </button>
+          </form>
+        )}
+
+        {/* ── STEP 5: KONFIRMASI WA ── */}
+        {step === 5 && (
+          <div className="space-y-6">
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-5 text-center">
+              <div className="text-4xl mb-3">✅</div>
+              <p className="text-base font-bold text-primary mb-1">Laporan Tersimpan!</p>
+              <p className="text-sm text-gray-500">Tiket <span className="font-semibold text-primary">{tiketId}</span></p>
             </div>
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-600">
-                {error}
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 space-y-3">
+              <p className="text-sm font-semibold text-blue-900">Satu langkah lagi 👇</p>
+              <p className="text-sm text-blue-800">
+                Konfirmasi laporan kamu via WhatsApp agar nomor HP kamu terverifikasi dan laporan langsung diproses.
+              </p>
+              <div className="bg-white rounded-xl border border-blue-100 px-4 py-3">
+                <p className="text-xs text-gray-400 mb-1">Pesan yang akan dikirim:</p>
+                <p className="text-sm font-mono font-semibold text-gray-800">LAPOR {tiketId}</p>
+              </div>
+              <p className="text-xs text-gray-400">
+                Tap tombol di bawah → WhatsApp terbuka → tap Kirim. Selesai.
+              </p>
+            </div>
+
+            {waLink ? (
+              <a
+                href={waLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary w-full text-center flex items-center justify-center gap-2 no-underline"
+              >
+                <span>💬</span>
+                <span>Kirim via WhatsApp</span>
+              </a>
+            ) : (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-sm text-yellow-700">
+                Nomor WhatsApp operator belum dikonfigurasi. Hubungi admin.
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full text-center disabled:opacity-60"
-            >
-              {loading ? (uploadProgress || 'Mengirim...') : 'Kirim Laporan 🚀'}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setStep(3)}
-              className="w-full text-center text-sm text-gray-400 hover:text-gray-600 py-1"
-            >
-              ← Kembali
-            </button>
-
             <p className="text-xs text-gray-400 text-center">
-              Dengan mengirim, kamu membantu Sungai Penuh selangkah lebih dekat ke Juara.
+              Laporan otomatis dikonfirmasi begitu pesan WA diterima.
             </p>
-          </form>
+          </div>
         )}
       </div>
     </div>
