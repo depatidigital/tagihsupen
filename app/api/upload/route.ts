@@ -3,7 +3,7 @@ import sharp from 'sharp'
 import { putObject } from '@/lib/s3'
 
 const MAX_DIMENSION = 1920
-const JPEG_QUALITY = 80
+const WEBP_QUALITY = 75
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,11 +23,11 @@ export async function POST(req: NextRequest) {
     const compressed = await sharp(raw)
       .rotate()                          // auto-rotate from EXIF
       .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
+      .webp({ quality: JPEG_QUALITY })
       .toBuffer()
 
-    const outputKey = key.replace(/\.[^.]+$/, '.jpg')
-    const publicUrl = await putObject(outputKey, compressed, 'image/jpeg')
+    const outputKey = key.replace(/\.[^.]+$/, '.webp')
+    const publicUrl = await putObject(outputKey, compressed, 'image/webp')
 
     return NextResponse.json({ publicUrl })
   } catch (err) {
