@@ -2,7 +2,7 @@
 
 ## Nama Produk
 **Tagih Supen**
-Tagline: *"Warga Bersuara, Supen Bergerak."*
+Tagline: *"Warga Bersuara, Sungai Penuh Bergerak."*
 Sub-tagline: *"Karena Juara Dimulai dari Warganya."*
 
 ---
@@ -470,6 +470,6 @@ cron.schedule('*/5 * * * *',    updateJuaraMeter)    // setiap 5 menit
 
 ---
 
-*Tagih Supen — Warga Bersuara, Supen Bergerak.*
+*Tagih Supen — Warga Bersuara, Sungai Penuh Bergerak.*
 *Dibangun oleh Depati Digital · Sungai Penuh, Jambi*
 *Brief v3.0 · Juni 2026*

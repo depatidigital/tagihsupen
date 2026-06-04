@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Laporan {
+  id           String    @id @default(cuid())
+  tiketId      String    @unique
+  nama         String
+  whatsapp     String
+  kategori     Kategori
+  deskripsi    String
+  lokasi       String
+  lat          Float?
+  lng          Float?
+  foto         String[]
+  fotoAfter    String[]
+  status       Status    @default(DITERIMA)
+  catatanAdmin String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  selesaiAt    DateTime?
+  riwayat      Riwayat[]
+  waLogs       WaLog[]
+}
+
+model Riwayat {
+  id        String   @id @default(cuid())
+  laporanId String
+  laporan   Laporan  @relation(fields: [laporanId], references: [id])
+  status    Status
+  catatan   String?
+  createdAt DateTime @default(now())
+}
+
+model Warga {
+  id           String   @id @default(cuid())
+  whatsapp     String   @unique
+  nama         String
+  totalLaporan Int      @default(0)
+  totalSelesai Int      @default(0)
+  badge        String[]
+  lastActive   DateTime @default(now())
+}
+
+model WaConfig {
+  id          String   @id @default(cuid())
+  waApiUrl    String
+  waAppId     String
+  waSecretKey String
+  waEnabled   Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+}
+
+model WaLog {
+  id        String   @id @default(cuid())
+  laporanId String?
+  laporan   Laporan? @relation(fields: [laporanId], references: [id])
+  whatsapp  String
+  jobKey    String
+  sentAt    DateTime @default(now())
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+enum Status {
+  DITERIMA
+  DITERUSKAN
+  DIPROSES
+  SELESAI
+  DITOLAK
+}
+
+enum Kategori {
+  SAMPAH
+  JALAN
+  DRAINASE
+  PENERANGAN
+  PASAR
+  LAINNYA
+}

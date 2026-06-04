@@ -1,6 +1,6 @@
 # Tagih Supen
 
-> *"Warga Bersuara, Supen Bergerak."*
+> *"Warga Bersuara, Sungai Penuh Bergerak."*
 
 Platform pelaporan masalah kota untuk warga Sungai Penuh — lapor, pantau, dan buktikan bahwa suaramu punya dampak nyata.
 

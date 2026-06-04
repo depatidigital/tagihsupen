@@ -7,7 +7,7 @@
 | | |
 |--|--|
 | **Nama produk** | Tagih Supen |
-| **Tagline utama** | *Warga Bersuara, Supen Bergerak.* |
+| **Tagline utama** | *Warga Bersuara, Sungai Penuh Bergerak.* |
 | **Tagline turunan** | *Karena Juara Dimulai dari Warganya.* |
 | **Satu kalimat** | Platform laporan warga Sungai Penuh yang terasa personal, bukan birokrasi. |
 
@@ -172,5 +172,5 @@ Framing selalu: *"Ini data yang membantu kita bersama."*
 
 ---
 
-*Tagih Supen — Warga Bersuara, Supen Bergerak.*
+*Tagih Supen — Warga Bersuara, Sungai Penuh Bergerak.*
 *Depati Digital · Sungai Penuh, Jambi*
