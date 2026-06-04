@@ -175,6 +175,13 @@ export default async function TiketPage({ params, searchParams }: {
         </div>
       </div>
 
+      <Link
+        href={`/share/laporan/${laporan.tiketId}`}
+        className="flex items-center justify-center gap-2 border-2 border-primary text-primary font-semibold py-3 rounded-2xl hover:bg-primary hover:text-white transition-all text-sm"
+      >
+        📸 Bagikan sebagai Kartu
+      </Link>
+
       <Link href="/" className="block text-center text-sm text-primary font-medium py-2">
         ← Kembali ke beranda
       </Link>

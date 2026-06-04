@@ -44,8 +44,7 @@ const MESSAGES = [
 
 export default function HeroMockup({ score }: { score: number }) {
   return (
-    <div className="hidden lg:flex justify-center">
-      <div className="w-60">
+    <div className="w-60">
         <div className="bg-[#111b21] border border-white/10 rounded-[2.5rem] p-2.5 shadow-2xl">
           <div className="rounded-[2rem] overflow-hidden">
             {/* WA header */}

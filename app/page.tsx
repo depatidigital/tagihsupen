@@ -11,6 +11,8 @@ import {
   ClipboardList, Bell, CheckCircle2,
   ArrowRight, TrendingUp, Users, Clock, FileCheck,
 } from 'lucide-react'
+import HeroMockup from '@/components/HeroMockup'
+import JuaraMeterGauge from '@/components/JuaraMeterGauge'
 
 export const revalidate = 60
 
@@ -128,91 +130,23 @@ export default async function HomePage() {
                 <MapPin size={16} /> Lihat Peta Laporan
               </Link>
             </div>
+
           </div>
 
-          {/* WA Chat Mockup */}
-          <div className="hidden lg:flex justify-center">
-            <div className="w-60">
-              <div className="bg-[#111b21] border border-white/10 rounded-[2.5rem] p-2.5 shadow-2xl">
-                <div className="rounded-[2rem] overflow-hidden">
-                  {/* WA header */}
-                  <div className="bg-[#202c33] px-3 py-2.5 flex items-center gap-2.5">
-                    <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center shrink-0">
-                      <span className="text-primary text-xs font-extrabold">T</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white text-[10px] font-bold truncate">Tagih Supen Bot</p>
-                      <div className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
-                        <p className="text-white/50 text-[8px]">aktif sekarang</p>
-                      </div>
-                    </div>
-                  </div>
+          {/* WA Mockup + Juara Meter overlay */}
+          <div className="hidden lg:flex justify-center relative">
+            <HeroMockup score={juaraMeter} />
 
-                  {/* Chat body */}
-                  <div className="bg-[#0b141a] px-2 py-3 space-y-2" style={{ minHeight: '280px' }}>
-                    {/* User bubble */}
-                    <div className="flex justify-end">
-                      <div className="bg-[#005c4b] text-white rounded-xl rounded-tr-none px-2.5 py-1.5 max-w-[80%]">
-                        <p className="text-[9px] leading-relaxed">Jalan rusak di Jl. Depati Parbo sudah 2 minggu 🚧</p>
-                        <p className="text-white/40 text-[7px] mt-0.5 text-right">09:14 ✓✓</p>
-                      </div>
-                    </div>
-
-                    {/* Bot — tiket diterima */}
-                    <div className="flex justify-start">
-                      <div className="bg-[#202c33] text-white rounded-xl rounded-tl-none px-2.5 py-1.5 max-w-[85%]">
-                        <p className="text-accent font-bold text-[8px] mb-0.5">Tagih Supen</p>
-                        <p className="text-[9px]">✅ Laporan diterima!</p>
-                        <p className="text-[9px] text-white/70">
-                          Tiket: <span className="text-accent font-bold">TSP-2024-089</span>
-                        </p>
-                        <p className="text-white/30 text-[7px] mt-0.5">09:14</p>
-                      </div>
-                    </div>
-
-                    {/* Bot — diteruskan */}
-                    <div className="flex justify-start">
-                      <div className="bg-[#202c33] text-white rounded-xl rounded-tl-none px-2.5 py-1.5 max-w-[85%]">
-                        <p className="text-accent font-bold text-[8px] mb-0.5">Tagih Supen</p>
-                        <p className="text-[9px]">🔄 Status diperbarui</p>
-                        <p className="text-blue-300 font-semibold text-[9px]">Diteruskan ke Dinas PU</p>
-                        <p className="text-white/30 text-[7px] mt-0.5">10:32</p>
-                      </div>
-                    </div>
-
-                    {/* Bot — diproses */}
-                    <div className="flex justify-start">
-                      <div className="bg-[#202c33] text-white rounded-xl rounded-tl-none px-2.5 py-1.5 max-w-[85%]">
-                        <p className="text-accent font-bold text-[8px] mb-0.5">Tagih Supen</p>
-                        <p className="text-[9px]">⚙️ Sedang diproses</p>
-                        <p className="text-yellow-300 font-semibold text-[9px]">Tim PU sudah turun lapangan</p>
-                        <p className="text-white/30 text-[7px] mt-0.5">Kemarin, 08:15</p>
-                      </div>
-                    </div>
-
-                    {/* Bot — selesai */}
-                    <div className="flex justify-start">
-                      <div className="bg-[#202c33] text-white rounded-xl rounded-tl-none px-2.5 py-1.5 max-w-[85%]">
-                        <p className="text-accent font-bold text-[8px] mb-0.5">Tagih Supen</p>
-                        <p className="text-[9px] font-bold">🎉 Laporan Selesai!</p>
-                        <p className="text-white/60 text-[8px]">Ditangani dalam 48 jam</p>
-                        <p className="text-white/30 text-[7px] mt-0.5">Hari ini, 14:20</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* WA input bar */}
-                  <div className="bg-[#202c33] px-2 py-2 flex items-center gap-1.5">
-                    <div className="flex-1 bg-[#2a3942] rounded-full px-2.5 py-1">
-                      <p className="text-white/30 text-[8px]">Ketik laporan...</p>
-                    </div>
-                    <div className="w-6 h-6 bg-accent rounded-full flex items-center justify-center shrink-0">
-                      <ArrowRight size={10} className="text-primary" />
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {/* Gauge overlay — bottom-right, overlapping */}
+            <div className="absolute bottom-0 right-4 z-10 bg-white rounded-2xl shadow-2xl p-3 w-44 border border-gray-100">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1 text-center">Juara Meter</p>
+              <JuaraMeterGauge score={juaraMeter} />
+              <Link
+                href="/share/meter"
+                className="block text-center text-[9px] text-primary font-semibold mt-1 hover:underline"
+              >
+                Bagikan →
+              </Link>
             </div>
           </div>
         </div>
@@ -289,40 +223,44 @@ export default async function HomePage() {
       {/* ── JUARA METER LIVE ── */}
       <section className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="max-w-xl mx-auto text-center">
+          <div className="max-w-sm mx-auto text-center">
             <p className="text-xs font-bold uppercase tracking-widest text-accent mb-3">Live</p>
             <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Juara Meter Kota</h2>
-            <p className="text-gray-500 text-sm mb-10">Skor responsivitas Sungai Penuh berdasarkan laporan warga 30 hari terakhir.</p>
-            <div className="bg-primary rounded-3xl p-8 text-white text-left">
-              <div className="flex items-center gap-3 mb-2">
+            <p className="text-gray-500 text-sm mb-8">Indeks responsivitas Sungai Penuh berdasarkan laporan warga 30 hari terakhir.</p>
+
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-lg p-6">
+              <div className="flex items-center justify-between mb-4 text-left">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Sungai Penuh</p>
+                  <p className="font-extrabold text-gray-900">Indeks Kepuasan Warga</p>
+                </div>
                 <TrendingUp size={20} className="text-accent" />
-                <span className="text-xs font-bold uppercase tracking-widest text-white/50">Responsivitas Kota</span>
               </div>
-              <div className="flex items-end gap-4 mb-4">
-                <span className="text-7xl font-extrabold" style={{ color: juaraColor }}>{juaraMeter}%</span>
-                <span className="text-lg font-semibold text-white/70 mb-2">{juaraLabel}</span>
-              </div>
-              <div className="w-full bg-white/10 rounded-full h-4 overflow-hidden">
-                <div
-                  className="h-4 rounded-full transition-all duration-700"
-                  style={{ width: `${juaraMeter}%`, backgroundColor: juaraColor }}
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4 mt-6 text-center">
+
+              <JuaraMeterGauge score={juaraMeter} />
+
+              <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-gray-100 text-center">
                 <div>
-                  <p className="text-2xl font-extrabold text-accent">{totalBulanIni}</p>
-                  <p className="text-[11px] text-white/60 mt-0.5">Laporan masuk</p>
+                  <p className="text-xl font-extrabold text-primary">{totalBulanIni}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">Laporan masuk</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-extrabold text-accent">{totalSelesai}</p>
-                  <p className="text-[11px] text-white/60 mt-0.5">Diselesaikan</p>
+                  <p className="text-xl font-extrabold text-primary">{totalSelesai}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">Diselesaikan</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-extrabold text-accent">{rataJam}j</p>
-                  <p className="text-[11px] text-white/60 mt-0.5">Rata penanganan</p>
+                  <p className="text-xl font-extrabold text-primary">{rataJam}j</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">Rata penanganan</p>
                 </div>
               </div>
             </div>
+
+            <Link
+              href="/share/meter"
+              className="inline-flex items-center gap-2 mt-4 text-sm text-primary font-semibold hover:underline"
+            >
+              Bagikan indeks ini →
+            </Link>
           </div>
         </div>
       </section>

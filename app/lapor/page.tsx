@@ -63,10 +63,13 @@ export default function LaporPage() {
   const [aiFailed, setAiFailed] = useState(false)
   const [kategori, setKategori] = useState<Kategori | null>(null)
   const [lokasiIsManual, setLokasiIsManual] = useState(false)
+  const [lokasiIsGPS, setLokasiIsGPS] = useState(true)
+  const [gpsStatus, setGpsStatus] = useState<'idle' | 'detecting' | 'ok' | 'error'>('idle')
+  const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [form, setForm] = useState({
     deskripsi: '',
     nama: '',
-    lokasi: '',
+    lokasi: 'GPS',
     lokasiManual: '',
     whatsapp: '',
   })
@@ -118,8 +121,21 @@ export default function LaporPage() {
     setLoading(true)
     setError('')
     try {
-      const lokasi = lokasiIsManual ? form.lokasiManual : form.lokasi
-      if (!lokasi) throw new Error('Pilih atau isi lokasi')
+      let lokasi: string
+      let lat: number | null = null
+      let lng: number | null = null
+      if (lokasiIsGPS) {
+        if (!gpsCoords) throw new Error('Posisi GPS belum terdeteksi')
+        lokasi = `GPS (${gpsCoords.lat.toFixed(5)}, ${gpsCoords.lng.toFixed(5)})`
+        lat = gpsCoords.lat
+        lng = gpsCoords.lng
+      } else if (lokasiIsManual) {
+        lokasi = form.lokasiManual
+        if (!lokasi) throw new Error('Isi nama lokasi')
+      } else {
+        lokasi = form.lokasi
+        if (!lokasi) throw new Error('Pilih lokasi')
+      }
 
       const res = await fetch('/api/laporan', {
         method: 'POST',
@@ -130,8 +146,8 @@ export default function LaporPage() {
           kategori,
           deskripsi: form.deskripsi,
           lokasi,
-          lat: null,
-          lng: null,
+          lat,
+          lng,
           foto: [],
         }),
       })
@@ -156,6 +172,23 @@ export default function LaporPage() {
       setLoading(false)
       setUploadProgress('')
     }
+  }
+
+  function detectGPS() {
+    if (!navigator.geolocation) {
+      setGpsStatus('error')
+      return
+    }
+    setGpsStatus('detecting')
+    setGpsCoords(null)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGpsCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+        setGpsStatus('ok')
+      },
+      () => setGpsStatus('error'),
+      { timeout: 10000, enableHighAccuracy: true }
+    )
   }
 
   function resetToStep1() {
@@ -330,7 +363,7 @@ export default function LaporPage() {
             <button
               type="button"
               disabled={!kategori}
-              onClick={() => setStep(4)}
+              onClick={() => { setStep(4); if (gpsStatus === 'idle') detectGPS() }}
               className="btn-primary w-full text-center disabled:opacity-40"
             >
               Lanjut →
@@ -375,19 +408,56 @@ export default function LaporPage() {
               <label className="label">Lokasi *</label>
               <select
                 className="input"
-                value={form.lokasi}
+                value={lokasiIsGPS ? 'GPS' : lokasiIsManual ? 'Lokasi Lain (isi manual)' : form.lokasi}
                 onChange={(e) => {
                   const v = e.target.value
-                  setLokasiIsManual(v === 'Lokasi Lain (isi manual)')
-                  setForm((f) => ({ ...f, lokasi: v }))
+                  if (v === 'GPS') {
+                    setLokasiIsGPS(true)
+                    setLokasiIsManual(false)
+                    if (gpsStatus === 'idle') detectGPS()
+                  } else if (v === 'Lokasi Lain (isi manual)') {
+                    setLokasiIsGPS(false)
+                    setLokasiIsManual(true)
+                    setForm((f) => ({ ...f, lokasi: v }))
+                  } else {
+                    setLokasiIsGPS(false)
+                    setLokasiIsManual(false)
+                    setForm((f) => ({ ...f, lokasi: v }))
+                  }
                 }}
-                required={!lokasiIsManual}
               >
-                <option value="">Pilih lokasi...</option>
+                <option value="GPS">📍 Gunakan Posisi Saya</option>
                 {LOKASI_PRESET.map((l) => (
                   <option key={l} value={l}>{l}</option>
                 ))}
               </select>
+
+              {lokasiIsGPS && (
+                <div className="mt-2">
+                  {gpsStatus === 'idle' && (
+                    <button type="button" onClick={detectGPS} className="text-sm text-primary font-medium">
+                      Deteksi posisi sekarang →
+                    </button>
+                  )}
+                  {gpsStatus === 'detecting' && (
+                    <p className="text-sm text-gray-400 animate-pulse">📡 Mendeteksi posisi GPS...</p>
+                  )}
+                  {gpsStatus === 'ok' && gpsCoords && (
+                    <p className="text-sm text-green-600 font-medium">
+                      ✓ Posisi terdeteksi ({gpsCoords.lat.toFixed(4)}, {gpsCoords.lng.toFixed(4)})
+                      <button type="button" onClick={detectGPS} className="ml-2 text-xs text-gray-400 underline">Perbarui</button>
+                    </p>
+                  )}
+                  {gpsStatus === 'error' && (
+                    <div className="text-sm text-red-500">
+                      Gagal mendapat posisi.{' '}
+                      <button type="button" onClick={detectGPS} className="underline">Coba lagi</button>
+                      {' '}atau pilih lokasi manual di atas.
+                    </div>
+                  )}
+                </div>
+              )}
+
               {lokasiIsManual && (
                 <input
                   className="input mt-2"

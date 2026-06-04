@@ -13,7 +13,6 @@ export const LOKASI_PRESET = [
   'Alun-alun Kota',
   'Jalan Depati Parbo',
   'Jalan Ahmad Yani',
-  'Kawasan Danau Kerinci',
   'Jalan Prof. M. Yamin',
   'Simpang Tiga Gedang',
   'Lokasi Lain (isi manual)',
