@@ -71,7 +71,7 @@ export default function PetaLaporan({ pins }: Props) {
           .bindPopup(
             `<div style="font-family:sans-serif;min-width:180px">
               <p style="font-weight:700;margin:0 0 4px">${KATEGORI_LABEL[pin.kategori]}</p>
-              <p style="margin:0 0 4px;font-size:13px;color:#555">📍 ${pin.lokasi}</p>
+              <p style="margin:0 0 4px;font-size:13px;color:#555">${pin.lokasi}</p>
               <p style="margin:0 0 8px;font-size:12px;color:#888">${new Date(pin.tanggal).toLocaleDateString('id-ID')}</p>
               <span style="background:${color};color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:100px">${STATUS_LABEL[pin.status]}</span>
               <a href="/tiket/${pin.tiketId}" style="display:block;margin-top:8px;font-size:12px;color:#1B4332;font-weight:600">Lihat detail →</a>

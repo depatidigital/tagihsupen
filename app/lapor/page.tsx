@@ -247,7 +247,7 @@ export default function LaporPage() {
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 space-y-1.5">
                 <p className="text-xs font-semibold text-yellow-800">Peringatan Kualitas Foto</p>
                 {imageIssues.map((issue) => (
-                  <p key={issue.code} className="text-xs text-yellow-700">⚠️ {issue.message}</p>
+                  <p key={issue.code} className="text-xs text-yellow-700 flex items-center gap-1"><AlertTriangle size={11} /> {issue.message}</p>
                 ))}
                 <p className="text-xs text-yellow-600 pt-1">Bisa tetap dilanjutkan — foto lebih jelas mempercepat penanganan.</p>
               </div>
@@ -376,7 +376,9 @@ export default function LaporPage() {
               {lokasiIsGPS && (
                 <div className="mt-2">
                   {gpsStatus === 'idle' && (
-                    <button type="button" onClick={detectGPS} className="text-sm text-primary font-medium">Deteksi posisi sekarang →</button>
+                    <button type="button" onClick={detectGPS} className="text-sm text-primary font-medium flex items-center gap-1.5">
+                      <Navigation size={14} /> Deteksi posisi sekarang
+                    </button>
                   )}
                   {gpsStatus === 'detecting' && (
                     <p className="text-sm text-gray-400 animate-pulse flex items-center gap-1.5">
@@ -427,7 +429,7 @@ export default function LaporPage() {
         {step === 5 && (
           <div className="space-y-6">
             <div className="bg-green-50 border border-green-200 rounded-2xl p-5 text-center">
-              <div className="text-4xl mb-3">✅</div>
+              <CheckCircle2 size={40} className="text-green-500 mx-auto mb-3" />
               <p className="text-base font-bold text-primary mb-1">Laporan Tersimpan!</p>
               <p className="text-sm text-gray-500">Tiket <span className="font-semibold text-primary">{tiketId}</span></p>
             </div>
@@ -453,7 +455,7 @@ export default function LaporPage() {
                 rel="noopener noreferrer"
                 className="btn-primary w-full text-center flex items-center justify-center gap-2 no-underline"
               >
-                <span>💬</span>
+                <MessageCircle size={18} />
                 <span>Kirim via WhatsApp</span>
               </a>
             ) : (

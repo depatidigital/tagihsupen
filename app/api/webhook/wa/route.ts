@@ -91,6 +91,8 @@ export async function POST(req: NextRequest) {
 
     if (!phone || !message) return NextResponse.json({ ok: true })
 
+    console.log('[WA incoming]', { phone, message, jid })
+
     // Handle LAPOR TKT-xxx
     const laporMatch = message.match(LAPOR_PATTERN)
     if (laporMatch) {
