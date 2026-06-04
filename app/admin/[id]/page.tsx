@@ -1,44 +1,73 @@
 import { prisma } from '@/lib/prisma'
 import { notFound, redirect } from 'next/navigation'
-import { KATEGORI_LABEL, KATEGORI_EMOJI, STATUS_LABEL, STATUS_COLOR, formatTanggal, formatJam } from '@/lib/utils'
+import {
+  KATEGORI_LABEL, KATEGORI_EMOJI, KATEGORI_DINAS,
+  STATUS_LABEL, STATUS_COLOR, formatTanggal, formatJam,
+} from '@/lib/utils'
 import { Status } from '@prisma/client'
 import Image from 'next/image'
 import Link from 'next/link'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
+import { sendWhatsApp } from '@/lib/whatsapp'
+import { msgDiteruskan, msgDiproses, msgSelesai } from '@/lib/messages'
+import { isFirstTimeSend, logSend, JOB_KEYS } from '@/lib/wa-log'
 
 async function updateStatus(id: string, formData: FormData) {
   'use server'
   const status = formData.get('status') as Status
-  const catatan = formData.get('catatan') as string
+  const catatan = (formData.get('catatan') as string) || undefined
 
-  const laporan = await prisma.laporan.update({
+  const updated = await prisma.laporan.update({
     where: { id },
     data: {
       status,
-      catatanAdmin: catatan || undefined,
+      catatanAdmin: catatan,
       selesaiAt: status === 'SELESAI' ? new Date() : undefined,
-      riwayat: {
-        create: { status, catatan: catatan || undefined },
-      },
+      riwayat: { create: { status, catatan } },
     },
   })
 
-  // Trigger WA notification
+  // Send WA notification
+  const { whatsapp, tiketId, kategori, lokasi, createdAt, selesaiAt } = updated
+
   try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-    await fetch(`${appUrl}/api/laporan/${laporan.id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-cron-secret': process.env.CRON_SECRET ?? '',
-      },
-      body: JSON.stringify({ status }),
-    })
-  } catch {}
+    if (status === 'DITERUSKAN' && (await isFirstTimeSend(whatsapp, JOB_KEYS.DITERUSKAN))) {
+      await sendWhatsApp(whatsapp, msgDiteruskan({ tiketId, dinas: KATEGORI_DINAS[kategori] }))
+      await logSend(whatsapp, JOB_KEYS.DITERUSKAN, id)
+    }
+    if (status === 'DIPROSES' && (await isFirstTimeSend(whatsapp, JOB_KEYS.DIPROSES))) {
+      await sendWhatsApp(whatsapp, msgDiproses({ tiketId }))
+      await logSend(whatsapp, JOB_KEYS.DIPROSES, id)
+    }
+    if (status === 'SELESAI' && (await isFirstTimeSend(whatsapp, JOB_KEYS.SELESAI))) {
+      const jamDitangani = selesaiAt
+        ? Math.round((selesaiAt.getTime() - createdAt.getTime()) / (1000 * 60 * 60))
+        : 0
+      const warga = await prisma.warga.findUnique({ where: { whatsapp } })
+      await sendWhatsApp(
+        whatsapp,
+        msgSelesai({
+          tiketId,
+          jamDitangani,
+          dinas: KATEGORI_DINAS[kategori],
+          lokasi,
+          totalSelesai: (warga?.totalSelesai ?? 0) + 1,
+        })
+      )
+      await logSend(whatsapp, JOB_KEYS.SELESAI, id)
+      await prisma.warga.update({
+        where: { whatsapp },
+        data: { totalSelesai: { increment: 1 }, badge: { push: 'Warga Peduli' } },
+      })
+    }
+  } catch (e) {
+    console.error('[WA admin update]', e)
+  }
 
   revalidatePath(`/admin/${id}`)
-  revalidatePath(`/tiket/${laporan.tiketId}`)
+  revalidatePath(`/tiket/${tiketId}`)
+  revalidatePath('/')
 }
 
 export default async function AdminDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -57,7 +86,7 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
 
   return (
     <div className="py-6 space-y-4">
-      <Link href="/admin" className="text-sm text-primary">← Kembali</Link>
+      <Link href="/admin" className="text-sm text-primary font-medium">← Kembali</Link>
 
       <div className="card">
         <p className="text-xs font-mono text-gray-400">{laporan.tiketId}</p>
@@ -89,7 +118,6 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
         </div>
       )}
 
-      {/* Update status */}
       <div className="card">
         <h2 className="font-bold text-sm mb-3">Update Status</h2>
         <form action={updateThisStatus} className="space-y-3">
@@ -104,14 +132,13 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
             placeholder="Catatan internal (opsional)"
             defaultValue={laporan.catatanAdmin ?? ''}
           />
-          <button type="submit" className="btn-primary w-full">Simpan Update</button>
+          <button type="submit" className="btn-primary w-full">Simpan</button>
         </form>
       </div>
 
-      {/* Riwayat */}
       <div className="card">
         <h2 className="font-bold text-sm mb-3">Riwayat</h2>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {laporan.riwayat.map((r) => (
             <div key={r.id} className="flex gap-3 text-sm">
               <span
@@ -121,8 +148,10 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
                 {STATUS_LABEL[r.status]}
               </span>
               <div>
-                <p className="text-xs text-gray-400">{formatTanggal(r.createdAt)} · {formatJam(r.createdAt)} WIB</p>
-                {r.catatan && <p className="text-sm text-gray-600">{r.catatan}</p>}
+                <p className="text-xs text-gray-400">
+                  {formatTanggal(r.createdAt)} · {formatJam(r.createdAt)} WIB
+                </p>
+                {r.catatan && <p className="text-sm text-gray-600 mt-0.5">{r.catatan}</p>}
               </div>
             </div>
           ))}
