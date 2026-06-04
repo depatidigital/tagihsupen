@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const compressed = await sharp(raw)
       .rotate()                          // auto-rotate from EXIF
       .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: JPEG_QUALITY })
+      .webp({ quality: WEBP_QUALITY })
       .toBuffer()
 
     const outputKey = key.replace(/\.[^.]+$/, '.webp')
