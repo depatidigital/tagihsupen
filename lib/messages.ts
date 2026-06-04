@@ -26,8 +26,7 @@ Kamu warga Supen ke-${vars.wargaKe} yang bersuara hari ini. Terima kasih.
 
 Balas:
 1 — Cek status
-2 — Tambah detail/foto
-3 — Share ke teman`
+2 — Share ke teman`
 }
 
 export function msgDiteruskan(vars: {

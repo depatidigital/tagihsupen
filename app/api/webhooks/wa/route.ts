@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { sendWhatsApp } from '@/lib/whatsapp'
-import { msgKonfirmasi, msgReply1, msgReply2, msgReply3, msgReplyUnknown } from '@/lib/messages'
+import { msgReply1, msgReply3, msgReplyUnknown } from '@/lib/messages'
+import { msgKonfirmasiAI } from '@/lib/messages-ai'
 import { logSend, JOB_KEYS } from '@/lib/wa-log'
 import { KATEGORI_LABEL, formatTanggal, formatJam } from '@/lib/utils'
 import fs from 'fs'
@@ -84,7 +85,7 @@ async function handleLapor(phone: string, jid: string | null, tiketId: string) {
     where: { status: { not: 'MENUNGGU_WA' }, createdAt: { gte: startOfDay } },
   })
 
-  const msg = msgKonfirmasi({
+  const msg = await msgKonfirmasiAI({
     nama: laporan.nama.split(' ')[0],
     tiketId,
     lokasi: laporan.lokasi,
@@ -154,8 +155,7 @@ export async function POST(req: NextRequest) {
     const { tiketId } = lastLaporan
     let reply = ''
     if (message === '1') reply = msgReply1(tiketId)
-    else if (message === '2') reply = msgReply2(tiketId)
-    else if (message === '3') reply = msgReply3(tiketId)
+    else if (message === '2') reply = msgReply3(tiketId)
     else reply = msgReplyUnknown()
 
     await sendWhatsApp(phone, { message: reply })
