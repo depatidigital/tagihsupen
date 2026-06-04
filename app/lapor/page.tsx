@@ -10,6 +10,28 @@ type Step = 1 | 2 | 3 | 4
 
 const STEP_LABELS = ['Foto', 'Analisa', 'Kategori', 'Detail']
 
+function formatWA(raw: string): string {
+  let d = raw.replace(/\D/g, '')
+  if (d.startsWith('62')) d = '0' + d.slice(2)
+  if (d.startsWith('0')) d = d.slice(0, 13)
+  else d = d.slice(0, 12)
+  if (d.length <= 4) return d
+  if (d.length <= 8) return d.slice(0, 4) + '-' + d.slice(4)
+  return d.slice(0, 4) + '-' + d.slice(4, 8) + '-' + d.slice(8)
+}
+
+function stripWA(formatted: string): string {
+  return formatted.replace(/\D/g, '')
+}
+
+function validateWA(formatted: string): string | null {
+  const d = stripWA(formatted)
+  if (!d) return 'Nomor WhatsApp wajib diisi'
+  if (!d.startsWith('08')) return 'Nomor harus diawali 08 (nomor HP Indonesia)'
+  if (!/^08[1-9]\d{7,10}$/.test(d)) return 'Format nomor tidak valid'
+  return null
+}
+
 async function resizeForAI(file: File): Promise<{ base64: string; mimeType: string }> {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -76,6 +98,8 @@ export default function LaporPage() {
   const [loading, setLoading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState('')
   const [error, setError] = useState('')
+  const [waError, setWaError] = useState<string | null>(null)
+  const [limitInfo, setLimitInfo] = useState<{ used: number; limit: number; remaining: number } | null>(null)
 
   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -118,6 +142,8 @@ export default function LaporPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!kategori || !foto) return
+    const waErr = validateWA(form.whatsapp)
+    if (waErr) { setWaError(waErr); return }
     setLoading(true)
     setError('')
     try {
@@ -142,7 +168,7 @@ export default function LaporPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nama: form.nama,
-          whatsapp: form.whatsapp,
+          whatsapp: stripWA(form.whatsapp),
           kategori,
           deskripsi: form.deskripsi,
           lokasi,
@@ -189,6 +215,15 @@ export default function LaporPage() {
       () => setGpsStatus('error'),
       { timeout: 10000, enableHighAccuracy: true }
     )
+  }
+
+  async function checkLimit(formatted: string) {
+    const wa = stripWA(formatted)
+    if (wa.length < 8) { setLimitInfo(null); return }
+    try {
+      const res = await fetch(`/api/laporan/limit?wa=${encodeURIComponent(wa)}`)
+      if (res.ok) setLimitInfo(await res.json())
+    } catch { /* silent */ }
   }
 
   function resetToStep1() {
@@ -385,23 +420,31 @@ export default function LaporPage() {
             <div>
               <label className="label">Deskripsi Masalah *</label>
               <textarea
-                className="input min-h-[100px] resize-none"
+                className={['input min-h-[100px] resize-none', form.deskripsi.length > 0 && form.deskripsi.length < 10 ? 'border-red-400 focus:ring-red-400' : ''].join(' ')}
                 value={form.deskripsi}
                 onChange={(e) => setForm((f) => ({ ...f, deskripsi: e.target.value }))}
-                placeholder="Jelaskan masalah yang kamu temukan..."
+                placeholder="Jelaskan masalah yang kamu temukan... (min. 10 karakter)"
+                minLength={10}
                 required
               />
+              {form.deskripsi.length > 0 && form.deskripsi.length < 10 && (
+                <p className="text-xs text-red-500 mt-1">⚠️ Minimal 10 karakter ({form.deskripsi.length}/10)</p>
+              )}
             </div>
 
             <div>
               <label className="label">Nama Lengkap *</label>
               <input
-                className="input"
+                className={['input', form.nama.length > 0 && form.nama.length < 2 ? 'border-red-400 focus:ring-red-400' : ''].join(' ')}
                 value={form.nama}
                 onChange={(e) => setForm((f) => ({ ...f, nama: e.target.value }))}
                 placeholder="Nama kamu"
+                minLength={2}
                 required
               />
+              {form.nama.length === 1 && (
+                <p className="text-xs text-red-500 mt-1">⚠️ Nama terlalu pendek</p>
+              )}
             </div>
 
             <div>
@@ -472,14 +515,46 @@ export default function LaporPage() {
             <div>
               <label className="label">Nomor WhatsApp *</label>
               <input
-                className="input"
+                className={['input', waError ? 'border-red-400 focus:ring-red-400' : ''].join(' ')}
                 type="tel"
+                inputMode="numeric"
                 value={form.whatsapp}
-                onChange={(e) => setForm((f) => ({ ...f, whatsapp: e.target.value }))}
-                placeholder="08xxxxxxxxxx"
+                onChange={(e) => {
+                  const formatted = formatWA(e.target.value)
+                  setForm((f) => ({ ...f, whatsapp: formatted }))
+                  setWaError(null)
+                }}
+                onBlur={(e) => {
+                  const err = validateWA(e.target.value)
+                  setWaError(err)
+                  if (!err) checkLimit(e.target.value)
+                }}
+                placeholder="0812-3456-7890"
                 required
               />
-              <p className="text-xs text-gray-400 mt-1">Update status laporan dikirim ke nomor ini</p>
+              {waError
+                ? <p className="text-xs text-red-500 mt-1">⚠️ {waError}</p>
+                : <p className="text-xs text-gray-400 mt-1">Update status laporan dikirim ke nomor ini</p>
+              }
+              {limitInfo && (
+                <div className={[
+                  'mt-2 rounded-xl px-3 py-2 text-xs font-medium flex items-center gap-2',
+                  limitInfo.remaining === 0
+                    ? 'bg-red-50 text-red-600 border border-red-200'
+                    : limitInfo.remaining <= 2
+                    ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                    : 'bg-green-50 text-green-700 border border-green-200',
+                ].join(' ')}>
+                  <span className="text-base">
+                    {limitInfo.remaining === 0 ? '🚫' : limitInfo.remaining <= 2 ? '⚠️' : '✅'}
+                  </span>
+                  <span>
+                    {limitInfo.remaining === 0
+                      ? `Batas harian tercapai. Coba lagi besok.`
+                      : `Sisa laporan hari ini: ${limitInfo.remaining} dari ${limitInfo.limit}`}
+                  </span>
+                </div>
+              )}
             </div>
 
             {error && (
