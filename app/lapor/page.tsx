@@ -277,7 +277,10 @@ export default function LaporPage() {
             {kategoriAI && !aiFailed ? (
               <div className="bg-green-50 border border-green-200 rounded-xl p-4">
                 <p className="text-xs font-medium text-green-600 mb-1">AI Mendeteksi</p>
-                <p className="text-lg font-bold text-primary">{KATEGORI_EMOJI[kategoriAI]} {KATEGORI_LABEL[kategoriAI]}</p>
+                <p className="text-lg font-bold text-primary flex items-center gap-2">
+                  {(() => { const Icon = KATEGORI_ICON[kategoriAI]; return <Icon size={18} /> })()}
+                  {KATEGORI_LABEL[kategoriAI]}
+                </p>
                 {alasanAI && <p className="text-xs text-gray-500 mt-1">{alasanAI}</p>}
               </div>
             ) : (

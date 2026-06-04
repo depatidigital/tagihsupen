@@ -26,7 +26,7 @@ function normalizePhone(phone: string): string {
 }
 
 function getWaConfig(): WaConfig | null {
-  const baseUrl   = process.env.WA_API_URL    || ''
+  const baseUrl   = (process.env.WA_API_URL    || '').replace(/\/+$/, '')
   const appId     = process.env.WA_APP_ID     || ''
   const secretKey = process.env.WA_SECRET_KEY || ''
   if (!baseUrl || !appId || !secretKey) return null
@@ -129,49 +129,6 @@ export async function sendWhatsAppJid(
   }
 }
 
-export async function sendWhatsAppGateway(
-  jid: string,
-  options: Omit<WaSendOptions, 'callbackUrl'>
-): Promise<WaSendResult> {
-  const baseUrl = process.env.WA_GATEWAY_URL
-  const clientId = process.env.WA_CLIENT_ID
-
-  if (!baseUrl || !clientId) {
-    console.error('sendWhatsAppGateway: missing WA_GATEWAY_URL or WA_CLIENT_ID')
-    return { ok: false, error: 'WA gateway config missing' }
-  }
-
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 15_000)
-
-  try {
-    const res = await fetch(`${baseUrl}/api/v1/${clientId}/send`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        to: jid,
-        message: options.message,
-        priority: options.priority ?? 'medium',
-      }),
-      signal: controller.signal,
-    })
-
-    clearTimeout(timeoutId)
-    const json = await res.json()
-
-    if (!res.ok || !json.ok) {
-      console.error('sendWhatsAppGateway error:', json)
-      return { ok: false, error: json.message ?? `HTTP ${res.status}` }
-    }
-
-    return { ok: true, id: json.messageId }
-  } catch (e: any) {
-    clearTimeout(timeoutId)
-    const msg = e.name === 'AbortError' ? 'timeout' : (e.message ?? 'unknown')
-    console.error('sendWhatsAppGateway failed:', msg)
-    return { ok: false, error: msg }
-  }
-}
 
 export interface DryRunEntry {
   phone: string
