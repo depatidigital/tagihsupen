@@ -14,7 +14,7 @@ async function handleLapor(phone: string, jid: string | null, tiketId: string) {
   })
 
   if (!laporan) {
-    await sendWhatsApp(phone, `Kode *${tiketId}* tidak ditemukan atau sudah dikonfirmasi sebelumnya.`)
+    await sendWhatsApp(phone, { message: `Kode *${tiketId}* tidak ditemukan atau sudah dikonfirmasi sebelumnya.` })
     return
   }
 
@@ -32,7 +32,7 @@ async function handleLapor(phone: string, jid: string | null, tiketId: string) {
     },
   })
   if (todayCount >= DAILY_LIMIT) {
-    await sendWhatsApp(phone, `Batas laporan harian tercapai (maks. ${DAILY_LIMIT} per nomor). Coba lagi besok.`)
+    await sendWhatsApp(phone, { message: `Batas laporan harian tercapai (maks. ${DAILY_LIMIT} per nomor). Coba lagi besok.` })
     return
   }
 
@@ -68,7 +68,7 @@ async function handleLapor(phone: string, jid: string | null, tiketId: string) {
     wargaKe,
   })
 
-  sendWhatsApp(phone, msg)
+  sendWhatsApp(phone, { message: msg })
     .then(() => logSend(phone, JOB_KEYS.KONFIRMASI, laporan.id))
     .catch(console.error)
 }
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
     })
 
     if (!lastLaporan) {
-      await sendWhatsApp(phone, msgReplyUnknown())
+      await sendWhatsApp(phone, { message: msgReplyUnknown() })
       return NextResponse.json({ ok: true })
     }
 
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
     else if (message === '3') reply = msgReply3(tiketId)
     else reply = msgReplyUnknown()
 
-    await sendWhatsApp(phone, reply)
+    await sendWhatsApp(phone, { message: reply })
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('[POST /api/webhook/wa]', err)

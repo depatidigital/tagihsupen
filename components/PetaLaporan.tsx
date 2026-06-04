@@ -94,7 +94,7 @@ export default function PetaLaporan({ pins }: Props) {
               iconAnchor: [9, 9],
             })
             L.marker([latitude, longitude], { icon: userIcon })
-              .bindPopup(`<div style="font-family:sans-serif;font-weight:700;font-size:13px">📍 Kamu di sini</div>`, { offset: [0, -5] })
+              .bindPopup(`<div style="font-family:sans-serif;font-weight:700;font-size:13px">Posisi kamu</div>`, { offset: [0, -5] })
               .addTo(map)
               .openPopup()
           },
