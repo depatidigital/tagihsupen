@@ -35,6 +35,7 @@ export default async function AdminPage({
   })
 
   return (
+    <div className="max-w-2xl mx-auto px-4 pb-16">
     <div className="py-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-primary">Admin Panel</h1>
@@ -105,6 +106,7 @@ export default async function AdminPage({
           <p className="text-sm text-gray-400 text-center py-8">Tidak ada laporan</p>
         )}
       </div>
+    </div>
     </div>
   )
 }

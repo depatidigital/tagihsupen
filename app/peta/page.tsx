@@ -1,7 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import dynamic from 'next/dynamic'
-
-const PetaLaporan = dynamic(() => import('@/components/PetaLaporan'), { ssr: false })
+import PetaLaporan from '@/components/PetaLaporan'
 
 export const revalidate = 60
 
@@ -36,6 +34,7 @@ export default async function PetaPage() {
   }))
 
   return (
+    <div className="max-w-2xl mx-auto px-4 pb-16">
     <div className="py-6">
       <h1 className="text-2xl font-extrabold text-primary mb-1">Peta Laporan</h1>
       <p className="text-sm text-gray-500 mb-4">
@@ -44,6 +43,7 @@ export default async function PetaPage() {
       <div className="rounded-2xl overflow-hidden border border-gray-100" style={{ height: '70vh' }}>
         <PetaLaporan pins={pins} />
       </div>
+    </div>
     </div>
   )
 }

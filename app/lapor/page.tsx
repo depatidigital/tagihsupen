@@ -114,6 +114,7 @@ export default function LaporPage() {
   }
 
   return (
+    <div className="max-w-2xl mx-auto px-4 pb-16">
     <div className="py-6">
       <h1 className="text-2xl font-extrabold text-primary mb-1">Lapor Masalah</h1>
       <p className="text-sm text-gray-500 mb-6">Suaramu penting. Isi dengan jelas agar cepat ditangani.</p>
@@ -228,6 +229,7 @@ export default function LaporPage() {
           Dengan mengirim, kamu membantu Sungai Penuh selangkah lebih dekat ke Juara.
         </p>
       </form>
+    </div>
     </div>
   )
 }

@@ -85,6 +85,7 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
   const updateThisStatus = updateStatus.bind(null, id)
 
   return (
+    <div className="max-w-2xl mx-auto px-4 pb-16">
     <div className="py-6 space-y-4">
       <Link href="/admin" className="text-sm text-primary font-medium">← Kembali</Link>
 
@@ -157,6 +158,7 @@ export default async function AdminDetailPage({ params }: { params: Promise<{ id
           ))}
         </div>
       </div>
+    </div>
     </div>
   )
 }

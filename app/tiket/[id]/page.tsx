@@ -36,6 +36,7 @@ export default async function TiketPage({ params, searchParams }: {
   const shareUrl = `${appUrl}/tiket/${laporan.tiketId}`
 
   return (
+    <div className="max-w-2xl mx-auto px-4 pb-16">
     <div className="py-6 space-y-4">
       {baru === '1' && (
         <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-center">
@@ -177,6 +178,7 @@ export default async function TiketPage({ params, searchParams }: {
       <Link href="/" className="block text-center text-sm text-primary font-medium py-2">
         ← Kembali ke beranda
       </Link>
+    </div>
     </div>
   )
 }
