@@ -45,16 +45,15 @@ async function updateStatus(id: string, formData: FormData) {
         ? Math.round((selesaiAt.getTime() - createdAt.getTime()) / (1000 * 60 * 60))
         : 0
       const warga = await prisma.warga.findUnique({ where: { whatsapp } })
-      await sendWhatsApp(
-        whatsapp,
-        msgSelesai({
+      await sendWhatsApp(whatsapp, {
+        message: msgSelesai({
           tiketId,
           jamDitangani,
           dinas: KATEGORI_DINAS[kategori],
           lokasi,
           totalSelesai: (warga?.totalSelesai ?? 0) + 1,
-        })
-      )
+        }),
+      })
       await logSend(whatsapp, JOB_KEYS.SELESAI, id)
       await prisma.warga.update({
         where: { whatsapp },

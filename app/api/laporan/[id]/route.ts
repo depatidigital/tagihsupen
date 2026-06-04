@@ -24,7 +24,7 @@ async function sendStatusWa(laporan: LaporanRow) {
   if (status === 'DITERUSKAN') {
     const first = await isFirstTimeSend(whatsapp, JOB_KEYS.DITERUSKAN)
     if (first) {
-      await sendWhatsApp(whatsapp, msgDiteruskan({ tiketId, dinas: KATEGORI_DINAS[kategori] }))
+      await sendWhatsApp(whatsapp, { message: msgDiteruskan({ tiketId, dinas: KATEGORI_DINAS[kategori] }) })
       await logSend(whatsapp, JOB_KEYS.DITERUSKAN, laporan.id)
     }
   }
