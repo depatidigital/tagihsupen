@@ -2,8 +2,13 @@
 
 import { useState, useRef, useCallback } from 'react'
 import { Kategori } from '@prisma/client'
-import { LOKASI_PRESET, KATEGORI_LABEL, KATEGORI_EMOJI } from '@/lib/utils'
+import { LOKASI_PRESET, KATEGORI_LABEL } from '@/lib/utils'
+import { KATEGORI_ICON } from '@/lib/icons'
 import { checkImageQuality, type ImageIssue } from '@/lib/check-image'
+import {
+  Camera, Bot, MapPin, Navigation, CheckCircle2,
+  Signal, AlertTriangle, MessageCircle, Check,
+} from 'lucide-react'
 
 type Step = 1 | 2 | 3 | 4 | 5
 
@@ -197,7 +202,7 @@ export default function LaporPage() {
                   'flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all shrink-0',
                   done ? 'bg-primary text-white' : active ? 'bg-accent text-primary' : 'bg-gray-100 text-gray-400',
                 ].join(' ')}>
-                  {done ? '✓' : n}
+                  {done ? <Check size={14} /> : n}
                 </div>
                 <span className={['ml-1.5 text-xs font-medium hidden sm:inline', active ? 'text-primary' : 'text-gray-400'].join(' ')}>
                   {label}
@@ -220,7 +225,7 @@ export default function LaporPage() {
                 onClick={() => fileRef.current?.click()}
                 className="w-full aspect-[4/3] rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-3 bg-gray-50 hover:bg-gray-100 active:scale-98 transition-all"
               >
-                <span className="text-5xl">📷</span>
+                <Camera size={48} className="text-gray-300" />
                 <span className="text-base font-semibold text-gray-600">Ambil Foto Masalah</span>
                 <span className="text-xs text-gray-400">Tap untuk buka kamera</span>
               </button>
@@ -259,7 +264,7 @@ export default function LaporPage() {
         {step === 2 && (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="text-4xl animate-pulse">🤖</span>
+              <Bot size={40} className="text-primary animate-pulse" />
             </div>
             <p className="text-base font-semibold text-gray-700">AI sedang menganalisa foto...</p>
             <p className="text-xs text-gray-400">Mendeteksi jenis masalah</p>
@@ -296,7 +301,7 @@ export default function LaporPage() {
                     kategori === k ? 'bg-primary text-white border-primary' : 'bg-white text-gray-700 border-gray-200 hover:border-primary hover:bg-green-50',
                   ].join(' ')}
                 >
-                  <span className="shrink-0">{KATEGORI_EMOJI[k]}</span>
+                  {(() => { const Icon = KATEGORI_ICON[k]; return <Icon size={16} className="shrink-0" /> })()}
                   <span className="leading-tight">{label}</span>
                 </button>
               ))}
@@ -373,11 +378,15 @@ export default function LaporPage() {
                   {gpsStatus === 'idle' && (
                     <button type="button" onClick={detectGPS} className="text-sm text-primary font-medium">Deteksi posisi sekarang →</button>
                   )}
-                  {gpsStatus === 'detecting' && <p className="text-sm text-gray-400 animate-pulse">📡 Mendeteksi posisi GPS...</p>}
+                  {gpsStatus === 'detecting' && (
+                    <p className="text-sm text-gray-400 animate-pulse flex items-center gap-1.5">
+                      <Signal size={14} /> Mendeteksi posisi GPS...
+                    </p>
+                  )}
                   {gpsStatus === 'ok' && gpsCoords && (
-                    <p className="text-sm text-green-600 font-medium">
-                      ✓ Posisi terdeteksi ({gpsCoords.lat.toFixed(4)}, {gpsCoords.lng.toFixed(4)})
-                      <button type="button" onClick={detectGPS} className="ml-2 text-xs text-gray-400 underline">Perbarui</button>
+                    <p className="text-sm text-green-600 font-medium flex items-center gap-1.5">
+                      <CheckCircle2 size={14} /> Posisi terdeteksi ({gpsCoords.lat.toFixed(4)}, {gpsCoords.lng.toFixed(4)})
+                      <button type="button" onClick={detectGPS} className="text-xs text-gray-400 underline">Perbarui</button>
                     </p>
                   )}
                   {gpsStatus === 'error' && (

@@ -1,10 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { getCachedJuaraMeter } from '@/lib/juara'
 import {
-  KATEGORI_LABEL, KATEGORI_EMOJI,
+  KATEGORI_LABEL,
   STATUS_LABEL, STATUS_COLOR,
   formatTanggal, labelJuaraMeter, colorJuaraMeter,
 } from '@/lib/utils'
+import { KATEGORI_ICON } from '@/lib/icons'
 import Link from 'next/link'
 import {
   BarChart3, MapPin, MessageCircle,
@@ -281,7 +282,7 @@ export default async function HomePage() {
             {laporanTerbaru.map((l) => (
               <Link key={l.id} href={`/tiket/${l.tiketId}`}>
                 <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-4 hover:border-primary hover:shadow-sm transition-all cursor-pointer">
-                  <span className="text-2xl">{KATEGORI_EMOJI[l.kategori]}</span>
+                  {(() => { const Icon = KATEGORI_ICON[l.kategori]; return <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center shrink-0"><Icon size={20} className="text-primary" /></div> })()}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-900 truncate">{KATEGORI_LABEL[l.kategori]}</p>
                     <p className="text-xs text-gray-500 truncate flex items-center gap-1">
