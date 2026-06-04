@@ -24,6 +24,19 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const data = schema.parse(body)
 
+    const DAILY_LIMIT = 5
+    const startOfDay = new Date()
+    startOfDay.setHours(0, 0, 0, 0)
+    const todayCount = await prisma.laporan.count({
+      where: { whatsapp: data.whatsapp, createdAt: { gte: startOfDay } },
+    })
+    if (todayCount >= DAILY_LIMIT) {
+      return NextResponse.json(
+        { error: `Batas laporan harian tercapai (maks. ${DAILY_LIMIT} laporan per nomor). Coba lagi besok.` },
+        { status: 429 }
+      )
+    }
+
     const tiketId = await nextTiketId()
 
     const laporan = await prisma.laporan.create({
