@@ -40,10 +40,13 @@ export default function PetaLaporan({ pins }: Props) {
     import('leaflet').then((L) => {
       if (!mapRef.current || mapInstance.current) return
 
-      const map = L.map(mapRef.current, { center: SUNGAI_PENUH, zoom: 14 })
+      const map = L.map(mapRef.current, { center: SUNGAI_PENUH, zoom: 14, maxZoom: 21, zoomControl: false })
+      L.control.zoom({ position: 'bottomright' }).addTo(map)
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+        maxNativeZoom: 18,
+        maxZoom: 21,
       }).addTo(map)
 
       pins.forEach((pin) => {

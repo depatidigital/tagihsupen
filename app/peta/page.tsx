@@ -34,16 +34,12 @@ export default async function PetaPage() {
   }))
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pb-16">
-    <div className="py-6">
-      <h1 className="text-2xl font-extrabold text-primary mb-1">Peta Laporan</h1>
-      <p className="text-sm text-gray-500 mb-4">
-        {pins.length} laporan aktif di Sungai Penuh
-      </p>
-      <div className="rounded-2xl overflow-hidden border border-gray-100" style={{ height: '70vh' }}>
-        <PetaLaporan pins={pins} />
+    <div className="relative w-full" style={{ height: 'calc(100svh - 57px)' }}>
+      <div className="absolute top-4 left-4 z-[500] bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg pointer-events-none">
+        <h1 className="text-base font-extrabold text-primary leading-tight">Peta Laporan</h1>
+        <p className="text-xs text-gray-500 mt-0.5">{pins.length} laporan aktif · Sungai Penuh</p>
       </div>
-    </div>
+      <PetaLaporan pins={pins} />
     </div>
   )
 }

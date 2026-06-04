@@ -6,6 +6,11 @@ import {
   formatTanggal, labelJuaraMeter, colorJuaraMeter,
 } from '@/lib/utils'
 import Link from 'next/link'
+import {
+  BarChart3, MapPin, MessageCircle,
+  ClipboardList, Bell, CheckCircle2,
+  ArrowRight, TrendingUp, Users, Clock, FileCheck,
+} from 'lucide-react'
 
 export const revalidate = 60
 
@@ -46,25 +51,25 @@ export default async function HomePage() {
   const juaraColor = colorJuaraMeter(juaraMeter)
 
   const stats = [
-    { value: totalBulanIni, label: 'Laporan masuk bulan ini' },
-    { value: totalSelesai, label: 'Laporan selesai' },
-    { value: `${rataJam}j`, label: 'Rata-rata penanganan' },
-    { value: wargaAktif, label: 'Warga aktif' },
+    { icon: FileCheck, value: totalBulanIni, label: 'Laporan masuk bulan ini' },
+    { icon: CheckCircle2, value: totalSelesai, label: 'Laporan selesai' },
+    { icon: Clock, value: `${rataJam}j`, label: 'Rata-rata penanganan' },
+    { icon: Users, value: wargaAktif, label: 'Warga aktif' },
   ]
 
   const fitur = [
     {
-      icon: '📊',
+      icon: BarChart3,
       title: 'Juara Meter',
       desc: 'Skor responsivitas kota dihitung otomatis setiap hari. Semakin tinggi, semakin cepat masalah kamu ditangani.',
     },
     {
-      icon: '📍',
+      icon: MapPin,
       title: 'Peta Laporan',
       desc: 'Lihat semua laporan aktif di peta interaktif. Tahu persis di mana masalah sedang terjadi di kotamu.',
     },
     {
-      icon: '💬',
+      icon: MessageCircle,
       title: 'Update via WhatsApp',
       desc: 'Setiap perubahan status laporan langsung dikirim ke WhatsApp-mu. Tidak perlu cek terus-terusan.',
     },
@@ -72,16 +77,19 @@ export default async function HomePage() {
 
   const langkah = [
     {
+      icon: ClipboardList,
       no: '01',
       title: 'Lapor masalah',
       desc: 'Isi formulir singkat: kategori, lokasi, deskripsi, dan foto opsional. Butuh kurang dari 2 menit.',
     },
     {
+      icon: Bell,
       no: '02',
       title: 'Pantau status',
       desc: 'Kamu dapat nomor tiket unik. Cek progres kapan saja. Update dikirim otomatis ke WhatsApp.',
     },
     {
+      icon: CheckCircle2,
       no: '03',
       title: 'Terbukti selesai',
       desc: 'Dinas terkait merespons dan menyelesaikan. Foto bukti penanganan diunggah sebagai konfirmasi.',
@@ -95,7 +103,8 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-14 items-center">
           <div>
             <div className="inline-flex items-center gap-2 bg-white/10 text-white/80 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
-              🏙️ Platform Laporan Warga · Sungai Penuh, Jambi
+              <MapPin size={12} />
+              Platform Laporan Warga · Sungai Penuh, Jambi
             </div>
             <h1 className="text-4xl lg:text-6xl font-extrabold leading-[1.1] mb-6">
               Warga Bersuara,{' '}
@@ -108,56 +117,100 @@ export default async function HomePage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/lapor"
-                className="bg-accent text-primary font-bold px-6 py-3 rounded-xl hover:bg-yellow-300 transition-all active:scale-95"
+                className="inline-flex items-center gap-2 bg-accent text-primary font-bold px-6 py-3 rounded-xl hover:bg-yellow-300 transition-all active:scale-95"
               >
-                Lapor Sekarang →
+                Lapor Sekarang <ArrowRight size={16} />
               </Link>
               <Link
                 href="/peta"
-                className="bg-white/10 text-white font-semibold px-6 py-3 rounded-xl hover:bg-white/20 transition-all"
+                className="inline-flex items-center gap-2 bg-white/10 text-white font-semibold px-6 py-3 rounded-xl hover:bg-white/20 transition-all"
               >
-                Lihat Peta Laporan
+                <MapPin size={16} /> Lihat Peta Laporan
               </Link>
             </div>
           </div>
 
-          {/* Phone mockup */}
+          {/* WA Chat Mockup */}
           <div className="hidden lg:flex justify-center">
-            <div className="relative w-56">
-              <div className="bg-white/10 border border-white/20 rounded-[2.5rem] p-3 shadow-2xl">
-                <div className="bg-gray-50 rounded-[2rem] p-3 space-y-2 overflow-hidden">
-                  <div className="flex justify-between items-center px-1">
-                    <span className="text-[9px] font-extrabold text-primary">Tagih Supen</span>
-                    <span className="text-[8px] bg-accent text-primary px-2 py-0.5 rounded-full font-bold">Lapor</span>
-                  </div>
-                  <div className="bg-primary rounded-2xl p-3">
-                    <p className="text-[8px] text-white/60 font-semibold uppercase tracking-wider">Juara Meter</p>
-                    <p className="text-2xl font-extrabold text-white leading-none mt-0.5">{juaraMeter}%</p>
-                    <div className="h-1.5 bg-white/20 rounded-full overflow-hidden mt-2">
-                      <div className="h-full bg-accent rounded-full" style={{ width: `${juaraMeter}%` }} />
+            <div className="w-60">
+              <div className="bg-[#111b21] border border-white/10 rounded-[2.5rem] p-2.5 shadow-2xl">
+                <div className="rounded-[2rem] overflow-hidden">
+                  {/* WA header */}
+                  <div className="bg-[#202c33] px-3 py-2.5 flex items-center gap-2.5">
+                    <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center shrink-0">
+                      <span className="text-primary text-xs font-extrabold">T</span>
                     </div>
-                  </div>
-                  {[
-                    { emoji: '🚧', label: 'Jalan Rusak', loc: 'Jl. Depati Parbo', status: 'Diproses', color: '#F5C842', textColor: '#1B4332' },
-                    { emoji: '🗑️', label: 'Sampah Menumpuk', loc: 'Pasar Baru', status: 'Selesai', color: '#1B4332', textColor: '#fff' },
-                    { emoji: '💡', label: 'Lampu Padam', loc: 'Alun-alun', status: 'Diterima', color: '#6B7280', textColor: '#fff' },
-                  ].map((item) => (
-                    <div key={item.label} className="bg-white rounded-xl p-2 shadow-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">{item.emoji}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[9px] font-bold text-gray-800 truncate">{item.label}</p>
-                          <p className="text-[8px] text-gray-400 truncate">{item.loc}</p>
-                        </div>
-                        <span
-                          className="text-[8px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
-                          style={{ backgroundColor: item.color, color: item.textColor }}
-                        >
-                          {item.status}
-                        </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-[10px] font-bold truncate">Tagih Supen Bot</p>
+                      <div className="flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                        <p className="text-white/50 text-[8px]">aktif sekarang</p>
                       </div>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Chat body */}
+                  <div className="bg-[#0b141a] px-2 py-3 space-y-2" style={{ minHeight: '280px' }}>
+                    {/* User bubble */}
+                    <div className="flex justify-end">
+                      <div className="bg-[#005c4b] text-white rounded-xl rounded-tr-none px-2.5 py-1.5 max-w-[80%]">
+                        <p className="text-[9px] leading-relaxed">Jalan rusak di Jl. Depati Parbo sudah 2 minggu 🚧</p>
+                        <p className="text-white/40 text-[7px] mt-0.5 text-right">09:14 ✓✓</p>
+                      </div>
+                    </div>
+
+                    {/* Bot — tiket diterima */}
+                    <div className="flex justify-start">
+                      <div className="bg-[#202c33] text-white rounded-xl rounded-tl-none px-2.5 py-1.5 max-w-[85%]">
+                        <p className="text-accent font-bold text-[8px] mb-0.5">Tagih Supen</p>
+                        <p className="text-[9px]">✅ Laporan diterima!</p>
+                        <p className="text-[9px] text-white/70">
+                          Tiket: <span className="text-accent font-bold">TSP-2024-089</span>
+                        </p>
+                        <p className="text-white/30 text-[7px] mt-0.5">09:14</p>
+                      </div>
+                    </div>
+
+                    {/* Bot — diteruskan */}
+                    <div className="flex justify-start">
+                      <div className="bg-[#202c33] text-white rounded-xl rounded-tl-none px-2.5 py-1.5 max-w-[85%]">
+                        <p className="text-accent font-bold text-[8px] mb-0.5">Tagih Supen</p>
+                        <p className="text-[9px]">🔄 Status diperbarui</p>
+                        <p className="text-blue-300 font-semibold text-[9px]">Diteruskan ke Dinas PU</p>
+                        <p className="text-white/30 text-[7px] mt-0.5">10:32</p>
+                      </div>
+                    </div>
+
+                    {/* Bot — diproses */}
+                    <div className="flex justify-start">
+                      <div className="bg-[#202c33] text-white rounded-xl rounded-tl-none px-2.5 py-1.5 max-w-[85%]">
+                        <p className="text-accent font-bold text-[8px] mb-0.5">Tagih Supen</p>
+                        <p className="text-[9px]">⚙️ Sedang diproses</p>
+                        <p className="text-yellow-300 font-semibold text-[9px]">Tim PU sudah turun lapangan</p>
+                        <p className="text-white/30 text-[7px] mt-0.5">Kemarin, 08:15</p>
+                      </div>
+                    </div>
+
+                    {/* Bot — selesai */}
+                    <div className="flex justify-start">
+                      <div className="bg-[#202c33] text-white rounded-xl rounded-tl-none px-2.5 py-1.5 max-w-[85%]">
+                        <p className="text-accent font-bold text-[8px] mb-0.5">Tagih Supen</p>
+                        <p className="text-[9px] font-bold">🎉 Laporan Selesai!</p>
+                        <p className="text-white/60 text-[8px]">Ditangani dalam 48 jam</p>
+                        <p className="text-white/30 text-[7px] mt-0.5">Hari ini, 14:20</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* WA input bar */}
+                  <div className="bg-[#202c33] px-2 py-2 flex items-center gap-1.5">
+                    <div className="flex-1 bg-[#2a3942] rounded-full px-2.5 py-1">
+                      <p className="text-white/30 text-[8px]">Ketik laporan...</p>
+                    </div>
+                    <div className="w-6 h-6 bg-accent rounded-full flex items-center justify-center shrink-0">
+                      <ArrowRight size={10} className="text-primary" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -168,12 +221,18 @@ export default async function HomePage() {
       {/* ── STATS BAR ── */}
       <section className="bg-accent py-10">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((s) => (
-            <div key={s.label} className="text-center">
-              <p className="text-4xl font-extrabold text-primary">{s.value}</p>
-              <p className="text-sm font-medium text-primary/70 mt-1">{s.label}</p>
-            </div>
-          ))}
+          {stats.map((s) => {
+            const Icon = s.icon
+            return (
+              <div key={s.label} className="text-center">
+                <div className="flex justify-center mb-2">
+                  <Icon size={20} className="text-primary/60" />
+                </div>
+                <p className="text-4xl font-extrabold text-primary">{s.value}</p>
+                <p className="text-sm font-medium text-primary/70 mt-1">{s.label}</p>
+              </div>
+            )
+          })}
         </div>
       </section>
 
@@ -186,18 +245,19 @@ export default async function HomePage() {
             <p className="text-gray-500 mt-3 max-w-lg mx-auto">Dari laporan ke penyelesaian — prosesnya transparan dan bisa dipantau.</p>
           </div>
           <div className="grid lg:grid-cols-3 gap-8">
-            {langkah.map((l, i) => (
-              <div key={l.no} className="relative">
-                {i < langkah.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 left-full w-full h-px bg-gray-200 z-0" style={{ width: 'calc(100% - 2rem)', transform: 'translateX(1rem)' }} />
-                )}
-                <div className="relative z-10">
-                  <p className="text-5xl font-extrabold text-gray-100 mb-4 leading-none">{l.no}</p>
+            {langkah.map((l) => {
+              const Icon = l.icon
+              return (
+                <div key={l.no} className="relative">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center mb-4">
+                    <Icon size={24} className="text-primary" />
+                  </div>
+                  <p className="text-5xl font-extrabold text-gray-100 absolute top-0 right-0 leading-none select-none">{l.no}</p>
                   <h3 className="text-xl font-extrabold text-gray-900 mb-2">{l.title}</h3>
                   <p className="text-gray-500 text-sm leading-relaxed">{l.desc}</p>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </section>
@@ -210,13 +270,18 @@ export default async function HomePage() {
             <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900">Dirancang untuk warga</h2>
           </div>
           <div className="grid lg:grid-cols-3 gap-6">
-            {fitur.map((f) => (
-              <div key={f.title} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                <p className="text-4xl mb-4">{f.icon}</p>
-                <h3 className="text-lg font-extrabold text-gray-900 mb-2">{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
+            {fitur.map((f) => {
+              const Icon = f.icon
+              return (
+                <div key={f.title} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mb-4">
+                    <Icon size={22} className="text-accent" />
+                  </div>
+                  <h3 className="text-lg font-extrabold text-gray-900 mb-2">{f.title}</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -229,6 +294,10 @@ export default async function HomePage() {
             <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Juara Meter Kota</h2>
             <p className="text-gray-500 text-sm mb-10">Skor responsivitas Sungai Penuh berdasarkan laporan warga 30 hari terakhir.</p>
             <div className="bg-primary rounded-3xl p-8 text-white text-left">
+              <div className="flex items-center gap-3 mb-2">
+                <TrendingUp size={20} className="text-accent" />
+                <span className="text-xs font-bold uppercase tracking-widest text-white/50">Responsivitas Kota</span>
+              </div>
               <div className="flex items-end gap-4 mb-4">
                 <span className="text-7xl font-extrabold" style={{ color: juaraColor }}>{juaraMeter}%</span>
                 <span className="text-lg font-semibold text-white/70 mb-2">{juaraLabel}</span>
@@ -266,8 +335,8 @@ export default async function HomePage() {
               <p className="text-xs font-bold uppercase tracking-widest text-accent mb-2">Aktivitas</p>
               <h2 className="text-3xl font-extrabold text-gray-900">Laporan Terbaru</h2>
             </div>
-            <Link href="/peta" className="text-sm text-primary font-semibold hover:underline">
-              Lihat peta →
+            <Link href="/peta" className="inline-flex items-center gap-1 text-sm text-primary font-semibold hover:underline">
+              Lihat peta <ArrowRight size={14} />
             </Link>
           </div>
           <div className="space-y-3 max-w-2xl">
@@ -277,7 +346,9 @@ export default async function HomePage() {
                   <span className="text-2xl">{KATEGORI_EMOJI[l.kategori]}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-900 truncate">{KATEGORI_LABEL[l.kategori]}</p>
-                    <p className="text-xs text-gray-500 truncate">📍 {l.lokasi}</p>
+                    <p className="text-xs text-gray-500 truncate flex items-center gap-1">
+                      <MapPin size={10} /> {l.lokasi}
+                    </p>
                   </div>
                   <div className="text-right shrink-0">
                     <span
@@ -306,9 +377,9 @@ export default async function HomePage() {
           </p>
           <Link
             href="/lapor"
-            className="inline-block bg-accent text-primary font-bold px-8 py-4 rounded-xl text-lg hover:bg-yellow-300 transition-all active:scale-95"
+            className="inline-flex items-center gap-2 bg-accent text-primary font-bold px-8 py-4 rounded-xl text-lg hover:bg-yellow-300 transition-all active:scale-95"
           >
-            Lapor Sekarang →
+            Lapor Sekarang <ArrowRight size={20} />
           </Link>
         </div>
       </section>

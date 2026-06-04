@@ -19,6 +19,16 @@ body {
   color: #111827;
 }
 
+@keyframes heroBubble {
+  from { opacity: 0; transform: translateY(8px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.hero-bubble {
+  opacity: 0;
+  animation: heroBubble 0.35s ease forwards;
+}
+
 @layer components {
   .btn-primary {
     @apply bg-primary text-white font-semibold px-6 py-3 rounded-xl hover:bg-opacity-90 transition-all active:scale-95;
