@@ -4,11 +4,13 @@ import { KATEGORI_LABEL, KATEGORI_EMOJI, STATUS_LABEL, STATUS_COLOR, formatTangg
 import satori from 'satori'
 import { Resvg } from '@resvg/resvg-js'
 import { readFileSync } from 'fs'
-import { join } from 'path'
+import { resolve } from 'path'
 
-const font = readFileSync(
-  join(process.cwd(), 'node_modules/@fontsource/plus-jakarta-sans/files/plus-jakarta-sans-latin-700-normal.woff')
+const fontPath = resolve(
+  require.resolve('@fontsource/plus-jakarta-sans/package.json'),
+  '../files/plus-jakarta-sans-latin-700-normal.woff'
 )
+const font = readFileSync(fontPath)
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

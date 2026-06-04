@@ -4,13 +4,9 @@ export async function hitungJuaraMeter(): Promise<number> {
   const since = new Date()
   since.setDate(since.getDate() - 30)
 
-  const [total, selesai, rataRataRaw, terlambat] = await Promise.all([
+  const [total, selesai, terlambat] = await Promise.all([
     prisma.laporan.count({ where: { createdAt: { gte: since } } }),
     prisma.laporan.count({ where: { createdAt: { gte: since }, status: 'SELESAI' } }),
-    prisma.laporan.aggregate({
-      where: { createdAt: { gte: since }, status: 'SELESAI', selesaiAt: { not: null } },
-      _avg: { updatedAt: false } as never,
-    }),
     prisma.laporan.count({
       where: {
         status: { in: ['DITERIMA', 'DITERUSKAN'] },
